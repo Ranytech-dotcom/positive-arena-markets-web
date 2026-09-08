@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#090d14">
+  <meta http-equiv="Cache-Control" content="no-store">
+  <title>Gold Validation — Positive Arena Markets V6</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="validation.css">
+</head>
+<body>
+  <main class="wrap">
+    <header class="top">
+      <div class="brand"><div class="logo">AU</div><div><div class="ey">POSITIVE ARENA</div><div class="title">Gold Validation</div></div></div>
+      <a class="refresh" href="index.html">Markets</a>
+    </header>
+
+    <section class="status-strip">
+      <div class="status-pill" id="healthBadge">CONNECTING</div>
+      <div class="status-pill">XAU-PRO-1</div>
+      <div class="status-pill">PRO-LIB-1</div>
+      <div class="status-pill">XAU-EXEC-2</div>
+    </section>
+
+    <section class="card validation-note">
+      <div class="ey">VALIDATION MODE</div>
+      <h2>Observe first. Change thresholds only after evidence.</h2>
+      <p>This page tracks Gold trade outcomes, professional-pattern context, M15 confirmation, M5 retest behavior and the ≤10-minute pre-confirmation alert. Existing trading rules stay frozen while the sample grows.</p>
+    </section>
+
+    <section class="metrics" id="metrics"><div class="card empty">Loading Gold evidence…</div></section>
+
+    <section class="card">
+      <div class="head"><h2>Post-upgrade evidence</h2><button id="refresh" class="refresh" type="button">Refresh</button></div>
+      <div id="upgradeStatus" class="upgrade-status">Loading…</div>
+    </section>
+
+    <section class="card">
+      <div class="head"><h2>Pattern performance</h2><div class="small">R-floor, not guaranteed profit</div></div>
+      <div id="patterns" class="pattern-list"><div class="empty">Loading…</div></div>
+    </section>
+
+    <div class="head"><h2>Recent Gold setups</h2></div>
+    <div class="filters" id="validationFilters">
+      <button class="filter active" data-filter="all">All</button>
+      <button class="filter" data-filter="post">XAU-EXEC-2</button>
+      <button class="filter" data-filter="entered">Entered</button>
+      <button class="filter" data-filter="rejected">Rejected</button>
+    </div>
+    <div id="recentValidation"><div class="card empty">Loading…</div></div>
+    <div id="status" class="foot">Connecting to Gold validation feed…</div>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="index.html">Markets</a>
+    <a href="history.html">History</a>
+    <a class="active" href="validation.html">Gold</a>
+    <a href="settings.html">Settings</a>
+  </nav>
+  <script src="validation.js" defer></script>
+</body>
+</html>
