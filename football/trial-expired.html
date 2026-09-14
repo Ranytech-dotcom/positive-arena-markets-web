@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07110d">
+  <title>Positive Arena Football — Access</title>
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="stylesheet" href="styles.css">
+  <style>body{min-height:100vh;display:grid;place-items:center;padding:22px}.box{width:min(100%,430px);background:var(--panel);border:1px solid var(--line);border-radius:26px;padding:26px;text-align:center;box-shadow:var(--shadow)}.ball{font-size:48px}.box h1{font-size:25px;margin:10px 0}.box p{color:var(--muted);line-height:1.55}.actions{display:grid;gap:10px;margin-top:20px}.actions a,.actions button{display:block;width:100%;border-radius:14px;padding:13px;font-weight:900;text-decoration:none;cursor:pointer}.actions a{background:linear-gradient(135deg,var(--green),var(--green2));color:#041109}.actions button{background:#101c17;border:1px solid var(--line);color:var(--text)}</style>
+</head>
+<body>
+  <main class="box">
+    <div class="ball">⚽</div>
+    <div class="eyebrow">POSITIVE ARENA FOOTBALL</div>
+    <h1 id="title">Football access paused</h1>
+    <p id="message">Your 30-day football test access is no longer active. Your account remains safe and your football history is preserved.</p>
+    <div class="actions"><a href="login.html">Return to Login</a><button id="signOut" type="button">Sign out this account</button></div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const reason=new URLSearchParams(location.search).get('reason');
+    if(reason==='access_error'){
+      document.getElementById('title').textContent='Could not verify access';
+      document.getElementById('message').textContent='Positive Arena could not verify your football membership right now. Please try again shortly.';
+    }
+    const sb=window.supabase.createClient('https://nsmevyhcpqijreuwbqkv.supabase.co','sb_publishable_vmjgX7GlO7iB32tlZRPfBQ__qv6ZixS');
+    document.getElementById('signOut').addEventListener('click',async()=>{await sb.auth.signOut();location.replace('login.html')});
+  </script>
+</body>
+</html>
