@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="validation.css">
 </head>
-<body>
+<body data-page="validation">
   <main class="wrap">
     <header class="top">
       <div class="brand"><div class="logo">AU</div><div><div class="ey">POSITIVE ARENA</div><div class="title">Gold Validation</div></div></div>
@@ -21,6 +21,7 @@
       <div class="status-pill">XAU-PRO-1</div>
       <div class="status-pill">PRO-LIB-1</div>
       <div class="status-pill">XAU-EXEC-2</div>
+      <div class="status-pill" id="trialBadge">MEMBERSHIP —</div>
     </section>
 
     <section class="card validation-note">
@@ -58,6 +59,8 @@
     <a class="active" href="validation.html">Gold</a>
     <a href="settings.html">Settings</a>
   </nav>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
   <script src="validation.js" defer></script>
 </body>
 </html>
