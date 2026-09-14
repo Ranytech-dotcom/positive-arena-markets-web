@@ -15,8 +15,8 @@
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="ui-polish.css?v=20260915-0028">
-  <style>html:not(.auth-ready) body{visibility:hidden}.danger-btn{width:100%;margin-top:10px;border:1px solid rgba(255,107,123,.28);background:rgba(255,107,123,.06);color:#ff8b98;border-radius:15px;padding:13px;font-weight:900}.admin-link{text-decoration:none;text-align:center}.notification-btn.enabled{background:#11231a;color:#39e58c;border:1px solid rgba(57,229,140,.28)}</style>
+  <link rel="stylesheet" href="ui-polish.css?v=20260915-0045">
+  <style>html:not(.auth-ready) body{visibility:hidden}.danger-btn{width:100%;margin-top:10px;border:1px solid rgba(255,107,123,.28);background:rgba(255,107,123,.06);color:#ff8b98;border-radius:15px;padding:13px;font-weight:900}.admin-link{text-decoration:none;text-align:center}.notification-btn.enabled{background:#11231a;color:#39e58c;border:1px solid rgba(57,229,140,.28)}.feed-updated{margin:-2px 0 14px;color:#70d9a4;font-size:11px;font-weight:850;letter-spacing:.035em}.result-pending{color:#f6d98a!important;border-color:rgba(246,217,138,.28)!important;background:rgba(246,217,138,.08)!important}.pending-note{color:#f6d98a!important}</style>
 </head>
 <body>
   <main class="app-shell">
@@ -46,6 +46,7 @@
         <article class="mini-card"><span>Strong</span><strong id="strongCount">0</strong><small>Core</small></article>
       </div>
       <div class="section-head"><div><div class="eyebrow">TODAY'S FEED</div><h3>Current signals</h3></div><button class="ghost-btn" id="refreshBtn" type="button">Refresh</button></div>
+      <div id="lastUpdated" class="feed-updated">Live • Auto-updating</div>
       <div class="filter-row" id="homeFilters">
         <button class="chip active" data-filter="ALL">All</button>
         <button class="chip" data-filter="WIN">Win</button>
@@ -71,14 +72,14 @@
     </section>
 
     <section class="view" data-view="results">
-      <div class="section-head solo"><div><div class="eyebrow">PERFORMANCE</div><h3>Results</h3></div></div>
+      <div class="section-head solo"><div><div class="eyebrow">PERFORMANCE</div><h3>Results & pending</h3></div></div>
       <div class="result-summary">
         <article><span>Won</span><strong id="wonCount">0</strong></article>
         <article><span>Lost</span><strong id="lostCount">0</strong></article>
         <article><span>Void</span><strong id="voidCount">0</strong></article>
         <article><span>Strike rate</span><strong id="strikeRate">—</strong></article>
       </div>
-      <div id="resultsNote" class="empty-card">No settled Positive Arena Football signals yet.</div>
+      <div id="resultsNote" class="empty-card">No started or settled Positive Arena Football signals yet.</div>
       <div id="resultList" class="signal-feed"></div>
     </section>
 
@@ -110,7 +111,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="auth.js"></script>
-  <script src="app.js?v=20260915-0028"></script>
+  <script src="app.js?v=20260915-0045"></script>
   <script src="notifications.js?v=20260915-0028"></script>
   <script src="ui-polish.js?v=20260915-0028"></script>
   <script src="member-watchlist-v2.js?v=20260915-0028"></script>
