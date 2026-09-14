@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#07110d">
   <meta name="robots" content="noindex,nofollow">
-  <title>Positive Arena Football — Admin</title>
+  <title>Positive Arena Football — Control</title>
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="admin.css">
@@ -13,10 +13,10 @@
 <body>
   <main class="admin-shell">
     <header class="admin-topbar">
-      <a class="back-link" href="index.html">← Dashboard</a>
+      <a class="back-link" href="index.html">← Football</a>
       <div class="admin-brand">
         <img src="icon.svg" class="admin-logo" alt="Positive Arena Football">
-        <div><div class="eyebrow">POSITIVE ARENA</div><h1>Football Admin</h1></div>
+        <div><div class="eyebrow">POSITIVE ARENA</div><h1>Football Control</h1></div>
       </div>
       <span id="adminRole" class="admin-pill">CHECKING</span>
     </header>
@@ -30,98 +30,79 @@
 
     <div id="adminArea" hidden>
       <section class="admin-hero">
-        <div><div class="eyebrow">FULL PROFESSIONAL PIPELINE</div><h2>Fixtures → evidence → contradiction gate → draft</h2><p>The engine can run the full football workflow in one tap. Qualified selections are still saved as drafts first, so nothing is released to members until you publish it.</p></div>
+        <div>
+          <div class="eyebrow">AUTOMATIC CORE ENGINE</div>
+          <h2>Scan. Qualify. Release.</h2>
+          <p>One tap checks today’s matches. Only selections that clear the strict Core gates can be released. Weak matches stay NO BET.</p>
+        </div>
         <div class="shield">⚽</div>
       </section>
 
       <section class="admin-card pipeline-card">
         <div class="admin-section-head">
-          <div><div class="eyebrow">ENGINE CONTROL</div><h3>Today’s football scan</h3></div>
-          <span class="pipeline-pill">NO FORCED PICKS</span>
+          <div><div class="eyebrow">TODAY</div><h3>Football scan</h3></div>
+          <span class="pipeline-pill">AUTO RELEASE ON</span>
         </div>
-        <p class="pipeline-copy">Hybrid free discovery now combines SportMonks with broader public fixture sources. The evidence layer then uses the richest data available for each match — recent form, xG/xGA where available, shots, SOT, box shots, big chances, home/away splits, rest, lineups and absences — before the market and contradiction gates are allowed to create a draft.</p>
-
-        <div class="pipeline-note"><b>HYBRID FREE DATA:</b> SportMonks remains the high-quality source where your free plan has coverage. ESPN public soccer feeds and TheSportsDB expand fixture discovery at no extra monthly cost. A fixture with weak evidence stays WAIT / NO BET rather than receiving a forced prediction.</div>
 
         <div class="full-run-row">
-          <label>Fixture date (WAT)<input id="syncDate" type="date"></label>
-          <button id="runFullPipeline" class="admin-primary full-run" type="button">⚡ Run Full Pipeline</button>
-        </div>
-        <div class="pipeline-actions step-actions">
-          <button id="syncFixtures" class="admin-secondary sync-button" type="button">1. Sync fixtures</button>
-          <button id="enrichEvidence" class="admin-secondary sync-button" type="button">2. Enrich evidence</button>
-          <button id="selectMarkets" class="admin-secondary sync-button" type="button">3. Market gate</button>
-          <button id="settleResults" class="admin-secondary sync-button" type="button">✓ Settle results</button>
+          <label>Date (WAT)<input id="syncDate" type="date"></label>
+          <button id="runFullPipeline" class="admin-primary full-run" type="button">⚡ Run Core Scan</button>
         </div>
         <div id="syncMessage" class="admin-message"></div>
 
         <div class="pipeline-stats five">
           <article><span>Fixtures</span><strong id="fixtureCount">0</strong></article>
-          <article><span>Enriched</span><strong id="enrichedCount">0</strong></article>
-          <article><span>Market-ready</span><strong id="readyCount">0</strong></article>
-          <article><span>Drafts</span><strong id="draftCount">0</strong></article>
-          <article><span>Rejected</span><strong id="rejectedCount">0</strong></article>
+          <article><span>Checked</span><strong id="enrichedCount">0</strong></article>
+          <article><span>Ready</span><strong id="readyCount">0</strong></article>
+          <article><span>Core</span><strong id="draftCount">0</strong></article>
+          <article><span>No Bet</span><strong id="rejectedCount">0</strong></article>
         </div>
-        <div class="pipeline-note"><b>DRAFT-FIRST:</b> READY means evidence coverage passed. DRAFT READY means one market survived the contradiction gates. Rejected fixtures remain NO BET. Elite requires stronger evidence, market confirmation and confirmed lineups; otherwise a qualifying pick can only be Strong Core.</div>
-        <div id="fixtureList" class="fixture-list"><div class="admin-empty">No imported fixtures yet.</div></div>
-      </section>
-
-      <section class="admin-card editor-card">
-        <div class="admin-section-head">
-          <div><div class="eyebrow">SIGNAL EDITOR</div><h3 id="editorTitle">New signal</h3></div>
-          <button id="cancelEdit" class="small-action" type="button" hidden>Cancel edit</button>
-        </div>
-
-        <form id="signalForm" autocomplete="off">
-          <div class="admin-grid two">
-            <label>Competition<input id="competition" required placeholder="e.g. Spain — La Liga"></label>
-            <label>Kickoff (Nigeria time)<input id="kickoff" type="datetime-local" required></label>
-          </div>
-          <div class="admin-grid two">
-            <label>Home team<input id="homeTeam" required></label>
-            <label>Away team<input id="awayTeam" required></label>
-          </div>
-          <div class="admin-grid two">
-            <label>Market
-              <select id="marketGroup" required>
-                <option value="WIN">WIN</option>
-                <option value="BTTS">BTTS</option>
-                <option value="O2.5">OVER 2.5</option>
-                <option value="DRAW">DRAW</option>
-                <option value="DOUBLE_CHANCE">DOUBLE CHANCE</option>
-                <option value="VALUE">VALUE / UNDERDOG</option>
-                <option value="ROLLOVER">ROLLOVER</option>
-                <option value="OTHER">OTHER / DNB / TEAM GOALS</option>
-              </select>
-            </label>
-            <label>Selection<input id="selection" required placeholder="e.g. BTTS — YES"></label>
-          </div>
-          <div class="admin-grid three">
-            <label>Odds<input id="odds" type="number" inputmode="decimal" min="1" step="0.01" placeholder="SportyBet/manual only"></label>
-            <label>Grade<select id="grade" required><option>STRONG CORE</option><option>ELITE CORE</option></select></label>
-            <label>Engine score<input id="confidence" type="number" min="0" max="100" step="0.1" placeholder="85"></label>
-          </div>
-          <label>Reasoning<textarea id="rationale" rows="4" placeholder="Why this selection qualified…"></textarea></label>
-          <label class="publish-check"><input id="published" type="checkbox"><span><b>Publish to members</b><small>Qualified engine picks arrive here as drafts. Tick only after review.</small></span></label>
-          <button id="saveSignal" class="admin-primary" type="submit">Save draft</button>
-          <div id="formMessage" class="admin-message"></div>
-        </form>
       </section>
 
       <section class="admin-card">
         <div class="admin-section-head">
-          <div><div class="eyebrow">SIGNAL MANAGER</div><h3>Recent signals</h3></div>
+          <div><div class="eyebrow">CORE FEED</div><h3>Recent signals</h3></div>
           <button id="reloadSignals" class="small-action" type="button">Refresh</button>
         </div>
         <div class="manager-filters">
           <button class="manager-chip active" data-manager-filter="ALL" type="button">All</button>
           <button class="manager-chip" data-manager-filter="PUBLISHED" type="button">Published</button>
-          <button class="manager-chip" data-manager-filter="DRAFT" type="button">Drafts</button>
+          <button class="manager-chip" data-manager-filter="DRAFT" type="button">Held</button>
           <button class="manager-chip" data-manager-filter="PENDING" type="button">Pending</button>
           <button class="manager-chip" data-manager-filter="SETTLED" type="button">Settled</button>
         </div>
-        <div id="adminSignals" class="admin-signal-list"><div class="admin-empty">Loading signals…</div></div>
+        <div id="adminSignals" class="admin-signal-list"><div class="admin-empty">No Core signals yet.</div></div>
       </section>
+
+      <!-- Engine maintenance controls stay out of the normal admin experience. -->
+      <div hidden aria-hidden="true">
+        <button id="syncFixtures" type="button">Sync fixtures</button>
+        <button id="enrichEvidence" type="button">Enrich evidence</button>
+        <button id="selectMarkets" type="button">Market gate</button>
+        <button id="settleResults" type="button">Settle results</button>
+        <div id="fixtureList"></div>
+
+        <section class="editor-card">
+          <form id="signalForm" autocomplete="off">
+            <input id="competition" required>
+            <input id="kickoff" type="datetime-local" required>
+            <input id="homeTeam" required>
+            <input id="awayTeam" required>
+            <select id="marketGroup" required>
+              <option value="WIN">WIN</option><option value="BTTS">BTTS</option><option value="O2.5">OVER 2.5</option><option value="DRAW">DRAW</option><option value="DOUBLE_CHANCE">DOUBLE CHANCE</option><option value="VALUE">VALUE / UNDERDOG</option><option value="ROLLOVER">ROLLOVER</option><option value="OTHER">OTHER / DNB / TEAM GOALS</option>
+            </select>
+            <input id="selection" required>
+            <input id="odds" type="number" min="1" step="0.01">
+            <select id="grade" required><option>STRONG CORE</option><option>ELITE CORE</option></select>
+            <input id="confidence" type="number" min="0" max="100" step="0.1">
+            <textarea id="rationale"></textarea>
+            <input id="published" type="checkbox">
+            <button id="saveSignal" type="submit">Save</button>
+            <button id="cancelEdit" type="button" hidden>Cancel</button>
+            <div id="editorTitle"></div><div id="formMessage"></div>
+          </form>
+        </section>
+      </div>
     </div>
   </main>
 
