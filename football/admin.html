@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07110d">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Positive Arena Football — Admin</title>
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <main class="admin-shell">
+    <header class="admin-topbar">
+      <a class="back-link" href="index.html">← Dashboard</a>
+      <div class="admin-brand">
+        <img src="icon.svg" class="admin-logo" alt="Positive Arena Football">
+        <div><div class="eyebrow">POSITIVE ARENA</div><h1>Football Admin</h1></div>
+      </div>
+      <span id="adminRole" class="admin-pill">CHECKING</span>
+    </header>
+
+    <section id="accessDenied" class="admin-card denied" hidden>
+      <div class="eyebrow">ADMIN ACCESS</div>
+      <h2>Account not authorised</h2>
+      <p>This page is restricted to Positive Arena Football administrators.</p>
+      <a class="admin-primary link-btn" href="index.html">Return to Football</a>
+    </section>
+
+    <div id="adminArea" hidden>
+      <section class="admin-hero">
+        <div><div class="eyebrow">SIGNAL CONTROL</div><h2>Publish football signals</h2><p>Create, edit, publish and settle selections without changing website code.</p></div>
+        <div class="shield">⚽</div>
+      </section>
+
+      <section class="admin-card editor-card">
+        <div class="admin-section-head">
+          <div><div class="eyebrow">SIGNAL EDITOR</div><h3 id="editorTitle">New signal</h3></div>
+          <button id="cancelEdit" class="small-action" type="button" hidden>Cancel edit</button>
+        </div>
+
+        <form id="signalForm" autocomplete="off">
+          <div class="admin-grid two">
+            <label>Competition<input id="competition" required placeholder="e.g. Spain — La Liga"></label>
+            <label>Kickoff (Nigeria time)<input id="kickoff" type="datetime-local" required></label>
+          </div>
+
+          <div class="admin-grid two">
+            <label>Home team<input id="homeTeam" required></label>
+            <label>Away team<input id="awayTeam" required></label>
+          </div>
+
+          <div class="admin-grid two">
+            <label>Market
+              <select id="marketGroup" required>
+                <option value="WIN">WIN</option>
+                <option value="BTTS">BTTS</option>
+                <option value="O2.5">OVER 2.5</option>
+                <option value="DRAW">DRAW</option>
+                <option value="DOUBLE_CHANCE">DOUBLE CHANCE</option>
+                <option value="VALUE">VALUE / UNDERDOG</option>
+                <option value="ROLLOVER">ROLLOVER</option>
+                <option value="OTHER">OTHER</option>
+              </select>
+            </label>
+            <label>Selection<input id="selection" required placeholder="e.g. BTTS — YES"></label>
+          </div>
+
+          <div class="admin-grid three">
+            <label>Odds<input id="odds" type="number" inputmode="decimal" min="1" step="0.01" placeholder="1.72"></label>
+            <label>Grade
+              <select id="grade" required><option>STRONG CORE</option><option>ELITE CORE</option></select>
+            </label>
+            <label>Confidence %<input id="confidence" type="number" min="0" max="100" step="0.1" placeholder="85"></label>
+          </div>
+
+          <label>Reasoning<textarea id="rationale" rows="4" placeholder="Why this selection qualified…"></textarea></label>
+
+          <label class="publish-check"><input id="published" type="checkbox" checked><span><b>Publish immediately</b><small>Turn this off to save as a draft.</small></span></label>
+
+          <button id="saveSignal" class="admin-primary" type="submit">Publish signal</button>
+          <div id="formMessage" class="admin-message"></div>
+        </form>
+      </section>
+
+      <section class="admin-card">
+        <div class="admin-section-head">
+          <div><div class="eyebrow">SIGNAL MANAGER</div><h3>Recent signals</h3></div>
+          <button id="reloadSignals" class="small-action" type="button">Refresh</button>
+        </div>
+        <div class="manager-filters">
+          <button class="manager-chip active" data-manager-filter="ALL" type="button">All</button>
+          <button class="manager-chip" data-manager-filter="PUBLISHED" type="button">Published</button>
+          <button class="manager-chip" data-manager-filter="DRAFT" type="button">Drafts</button>
+          <button class="manager-chip" data-manager-filter="PENDING" type="button">Pending</button>
+          <button class="manager-chip" data-manager-filter="SETTLED" type="button">Settled</button>
+        </div>
+        <div id="adminSignals" class="admin-signal-list"><div class="admin-empty">Loading signals…</div></div>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
