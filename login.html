@@ -10,24 +10,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
   <style>
-    body{min-height:100vh;display:grid;place-items:center;padding:24px 14px;background:#090d14}
-    .auth-shell{width:min(100%,440px)}
-    .auth-card{background:#111722;border:1px solid #283246;border-radius:22px;padding:20px;margin-top:16px}
-    .auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
-    .auth-tab{border:1px solid #283246;background:#151d2a;color:#b7c0cf;border-radius:12px;padding:11px;font-weight:850;cursor:pointer}
-    .auth-tab.active{background:#1b2740;color:#fff;border-color:#506486}
-    .auth-form{display:none}.auth-form.active{display:block}
-    .field{margin-top:12px}.field label{display:block;font-size:12px;color:#9ba6b8;margin-bottom:7px;font-weight:800}
-    .field input{width:100%;background:#0d131c;color:#fff;border:1px solid #283246;border-radius:12px;padding:13px;font-size:16px;outline:none}
-    .password-wrap{position:relative}.password-wrap input{padding-right:78px}
-    .show-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:#1b2740;color:#fff;border-radius:9px;padding:8px 10px;font-size:12px;font-weight:800;cursor:pointer}
-    .submit{width:100%;margin-top:16px;border:1px solid #506486;background:#1b2740;color:#fff;border-radius:12px;padding:13px;font-weight:900;cursor:pointer}
-    .text-btn{width:100%;margin-top:10px;border:0;background:transparent;color:#e6bf5d;padding:8px;font-weight:800;cursor:pointer;text-decoration:underline}
-    .auth-links{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:10px}.auth-links a,.auth-links button{border:0;background:transparent;color:#9fb8ef;padding:0;font-size:13px;font-weight:800;cursor:pointer;text-decoration:underline}
-    .msg{margin-top:12px;color:#9ba6b8;line-height:1.5;font-size:13px;min-height:20px}.msg.error{color:#ff7083}.msg.ok{color:#44d69b}.msg.info{color:#e6bf5d}
-    .brand-center{display:flex;align-items:center;gap:12px}.mini{color:#9ba6b8;font-size:13px;line-height:1.5;margin-top:8px}
-    .app-icon{width:52px;height:52px;border-radius:14px;display:block}
-    .trial-box{margin-top:14px;border:1px solid #55482a;background:#15130d;border-radius:15px;padding:13px;color:#e6bf5d;font-weight:850;line-height:1.45}
+    body{min-height:100vh;display:grid;place-items:center;padding:24px 14px;background:#090d14}.auth-shell{width:min(100%,440px)}.auth-card{background:#111722;border:1px solid #283246;border-radius:22px;padding:20px;margin-top:16px}.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}.auth-tab{border:1px solid #283246;background:#151d2a;color:#b7c0cf;border-radius:12px;padding:11px;font-weight:850;cursor:pointer}.auth-tab.active{background:#1b2740;color:#fff;border-color:#506486}.auth-form{display:none}.auth-form.active{display:block}.field{margin-top:12px}.field label{display:block;font-size:12px;color:#9ba6b8;margin-bottom:7px;font-weight:800}.field input{width:100%;background:#0d131c;color:#fff;border:1px solid #283246;border-radius:12px;padding:13px;font-size:16px;outline:none}.password-wrap{position:relative}.password-wrap input{padding-right:78px}.show-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:#1b2740;color:#fff;border-radius:9px;padding:8px 10px;font-size:12px;font-weight:800;cursor:pointer}.submit{width:100%;margin-top:16px;border:1px solid #506486;background:#1b2740;color:#fff;border-radius:12px;padding:13px;font-weight:900;cursor:pointer}.auth-links{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:10px}.auth-links a,.auth-links button{border:0;background:transparent;color:#9fb8ef;padding:0;font-size:13px;font-weight:800;cursor:pointer;text-decoration:underline}.msg{margin-top:12px;color:#9ba6b8;line-height:1.5;font-size:13px;min-height:20px}.msg.error{color:#ff7083}.msg.ok{color:#44d69b}.msg.info{color:#e6bf5d}.brand-center{display:flex;align-items:center;gap:12px}.mini{color:#9ba6b8;font-size:13px;line-height:1.5;margin-top:8px}.app-icon{width:52px;height:52px;border-radius:14px;display:block}.trial-box{margin-top:14px;border:1px solid #55482a;background:#15130d;border-radius:15px;padding:13px;color:#e6bf5d;font-weight:850;line-height:1.45}
   </style>
 </head>
 <body>
@@ -35,97 +18,38 @@
     <div class="brand-center"><img src="favicon.svg" class="app-icon" alt="Positive Arena"><div><div class="ey">POSITIVE ARENA</div><div class="title">Gold Signals Test App</div></div></div>
     <div class="trial-box">🎁 Gold (XAUUSD) only · 30-day free test trial.</div>
     <div class="mini">Create an account or sign in to view the Gold dashboard, live chart and verified V6 setups. No subscription or payment is required during this test phase.</div>
-
     <section class="auth-card">
-      <div class="auth-tabs">
-        <button class="auth-tab active" data-tab="login" type="button">Login</button>
-        <button class="auth-tab" data-tab="signup" type="button">Sign Up</button>
-      </div>
-
+      <div class="auth-tabs"><button class="auth-tab active" data-tab="login" type="button">Login</button><button class="auth-tab" data-tab="signup" type="button">Sign Up</button></div>
       <form id="loginForm" class="auth-form active">
         <div class="field"><label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="email" required></div>
         <div class="field"><label for="loginPassword">Password</label><div class="password-wrap"><input id="loginPassword" type="password" autocomplete="current-password" minlength="6" required><button class="show-btn" type="button" data-toggle="loginPassword">Show</button></div></div>
         <button class="submit" type="submit">Login to Gold Dashboard</button>
-        <div class="auth-links">
-          <a href="forgot-password.html">Forgot password?</a>
-          <button id="resendBtn" type="button">Resend confirmation email</button>
-        </div>
+        <div class="auth-links"><a href="forgot-password.html">Forgot password?</a><button id="resendBtn" type="button">Resend confirmation email</button></div>
         <div id="loginMsg" class="msg"></div>
       </form>
-
       <form id="signupForm" class="auth-form">
         <div class="field"><label for="signupEmail">Email</label><input id="signupEmail" type="email" autocomplete="email" required></div>
         <div class="field"><label for="signupPassword">Password</label><div class="password-wrap"><input id="signupPassword" type="password" autocomplete="new-password" minlength="6" required><button class="show-btn" type="button" data-toggle="signupPassword">Show</button></div></div>
         <div class="field"><label for="signupConfirm">Confirm password</label><div class="password-wrap"><input id="signupConfirm" type="password" autocomplete="new-password" minlength="6" required><button class="show-btn" type="button" data-toggle="signupConfirm">Show</button></div></div>
-        <button class="submit" type="submit">Start 30-Day Gold Trial</button>
-        <div id="signupMsg" class="msg"></div>
+        <button class="submit" type="submit">Start 30-Day Gold Trial</button><div id="signupMsg" class="msg"></div>
       </form>
     </section>
   </main>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const sb=window.supabase.createClient('https://nsmevyhcpqijreuwbqkv.supabase.co','sb_publishable_vmjgX7GlO7iB32tlZRPfBQ__qv6ZixS');
-    const APP_BASE='https://ranytech-dotcom.github.io/positive-arena-markets-web/';
-    const LOGIN_URL=APP_BASE+'login.html';
+    const recoveryInUrl=()=>/type=recovery/i.test(location.hash+location.search);
+    if(recoveryInUrl()) location.replace('reset-password.html'+location.search+location.hash);
+    sb.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY') location.replace('reset-password.html'+location.search+location.hash)});
     const next=new URLSearchParams(location.search).get('next')||'index.html';
     const safeNext=/^[a-zA-Z0-9._-]+\.html$/.test(next)?next:'index.html';
-
-    document.querySelectorAll('.auth-tab').forEach(btn=>btn.addEventListener('click',()=>{
-      document.querySelectorAll('.auth-tab').forEach(b=>b.classList.toggle('active',b===btn));
-      document.querySelectorAll('.auth-form').forEach(f=>f.classList.toggle('active',f.id===(btn.dataset.tab==='login'?'loginForm':'signupForm')));
-    }));
-
-    document.querySelectorAll('[data-toggle]').forEach(btn=>btn.addEventListener('click',()=>{
-      const input=document.getElementById(btn.dataset.toggle);
-      const showing=input.type==='text';
-      input.type=showing?'password':'text';
-      btn.textContent=showing?'Show':'Hide';
-    }));
-
+    document.querySelectorAll('.auth-tab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.auth-tab').forEach(b=>b.classList.toggle('active',b===btn));document.querySelectorAll('.auth-form').forEach(f=>f.classList.toggle('active',f.id===(btn.dataset.tab==='login'?'loginForm':'signupForm')))}));
+    document.querySelectorAll('[data-toggle]').forEach(btn=>btn.addEventListener('click',()=>{const input=document.getElementById(btn.dataset.toggle);const showing=input.type==='text';input.type=showing?'password':'text';btn.textContent=showing?'Show':'Hide'}));
     const setMsg=(id,text,kind='error')=>{const e=document.getElementById(id);e.textContent=text||'';e.className='msg '+(text?kind:'')};
-
-    document.getElementById('loginForm').addEventListener('submit',async e=>{
-      e.preventDefault();setMsg('loginMsg','');
-      const email=document.getElementById('loginEmail').value.trim();
-      const password=document.getElementById('loginPassword').value;
-      const {error}=await sb.auth.signInWithPassword({email,password});
-      if(error){
-        const msg=String(error.message||'Login failed.');
-        if(/confirm|verified/i.test(msg)) setMsg('loginMsg','Your email is not confirmed yet. Tap “Resend confirmation email” below.','info');
-        else setMsg('loginMsg',msg,'error');
-        return;
-      }
-      location.replace(safeNext);
-    });
-
-    document.getElementById('resendBtn').addEventListener('click',async()=>{
-      const email=(document.getElementById('loginEmail').value||document.getElementById('signupEmail').value).trim();
-      if(!email){setMsg('loginMsg','Enter your email first, then tap Resend confirmation email.','info');return}
-      setMsg('loginMsg','Sending confirmation email…','info');
-      const {error}=await sb.auth.resend({type:'signup',email,options:{emailRedirectTo:LOGIN_URL}});
-      if(error){setMsg('loginMsg',error.message||'Could not resend confirmation email.','error');return}
-      setMsg('loginMsg','Confirmation email requested. Check Inbox, Spam and Promotions.','ok');
-    });
-
-    document.getElementById('signupForm').addEventListener('submit',async e=>{
-      e.preventDefault();setMsg('signupMsg','');
-      const email=document.getElementById('signupEmail').value.trim();
-      const password=document.getElementById('signupPassword').value;
-      const confirm=document.getElementById('signupConfirm').value;
-      if(password!==confirm){setMsg('signupMsg','Passwords do not match.','error');return}
-      const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:LOGIN_URL}});
-      if(error){setMsg('signupMsg',error.message,'error');return}
-      if(data.session){location.replace(safeNext);return}
-      const identities=data?.user?.identities||[];
-      if(data?.user && identities.length===0){
-        setMsg('signupMsg','This email may already have an account. Try Login or use Forgot password. If your email is still unconfirmed, use Resend confirmation email on the Login tab.','info');
-        return;
-      }
-      setMsg('signupMsg','Account created. A confirmation email has been requested. Check Inbox, Spam and Promotions, then return here to log in.','ok');
-    });
-
-    sb.auth.getSession().then(({data})=>{if(data.session)location.replace(safeNext)});
+    document.getElementById('loginForm').addEventListener('submit',async e=>{e.preventDefault();setMsg('loginMsg','');const email=document.getElementById('loginEmail').value.trim();const password=document.getElementById('loginPassword').value;const {error}=await sb.auth.signInWithPassword({email,password});if(error){const m=String(error.message||'Login failed.');if(/confirm|verified/i.test(m))setMsg('loginMsg','Your email is not confirmed yet. Tap “Resend confirmation email” below.','info');else setMsg('loginMsg',m,'error');return}location.replace(safeNext)});
+    document.getElementById('resendBtn').addEventListener('click',async()=>{const email=(document.getElementById('loginEmail').value||document.getElementById('signupEmail').value).trim();if(!email){setMsg('loginMsg','Enter your email first, then tap Resend confirmation email.','info');return}setMsg('loginMsg','Sending confirmation email…','info');const redirectTo='https://ranytech-dotcom.github.io/positive-arena-markets-web/login.html';const {error}=await sb.auth.resend({type:'signup',email,options:{emailRedirectTo:redirectTo}});if(error){setMsg('loginMsg',error.message||'Could not resend confirmation email.','error');return}setMsg('loginMsg','Confirmation email requested. Check Inbox, Spam and Promotions.','ok')});
+    document.getElementById('signupForm').addEventListener('submit',async e=>{e.preventDefault();setMsg('signupMsg','');const email=document.getElementById('signupEmail').value.trim();const password=document.getElementById('signupPassword').value;const confirm=document.getElementById('signupConfirm').value;if(password!==confirm){setMsg('signupMsg','Passwords do not match.','error');return}const redirectTo='https://ranytech-dotcom.github.io/positive-arena-markets-web/login.html';const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:redirectTo}});if(error){setMsg('signupMsg',error.message,'error');return}if(data.session){location.replace(safeNext);return}const identities=data?.user?.identities||[];if(data?.user&&identities.length===0){setMsg('signupMsg','This email may already have an account. Try Login or use Forgot password. If your email is still unconfirmed, use Resend confirmation email on the Login tab.','info');return}setMsg('signupMsg','Account created. A confirmation email has been requested. Check Inbox, Spam and Promotions, then return here to log in.','ok')});
+    sb.auth.getSession().then(({data})=>{if(data.session&&!recoveryInUrl())location.replace(safeNext)});
   </script>
 </body>
 </html>
