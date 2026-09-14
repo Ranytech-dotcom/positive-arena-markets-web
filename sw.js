@@ -1,4 +1,4 @@
-const CACHE='pa-gold-pwa-v2';
+const CACHE='pa-gold-pwa-v3';
 const APP_URL='./index.html';
 const SHELL=[
   './','./index.html','./login.html','./history.html','./calendar.html','./settings.html',
@@ -58,9 +58,10 @@ self.addEventListener('fetch',event=>{
   if(url.origin!==self.location.origin){return;}
   if(url.pathname.includes('/functions/v1/')||url.pathname.includes('/auth/v1/')||url.pathname.includes('/rest/v1/'))return;
 
+  // Always revalidate page navigations so members see UI changes immediately.
   if(req.mode==='navigate'){
     event.respondWith(
-      fetch(req).then(res=>{
+      fetch(req,{cache:'no-store'}).then(res=>{
         const copy=res.clone();
         caches.open(CACHE).then(cache=>cache.put(req,copy)).catch(()=>{});
         return res;
