@@ -1,4 +1,4 @@
-const CACHE='pa-gold-pwa-v3';
+const CACHE='pa-gold-pwa-v4';
 const APP_URL='./index.html';
 const SHELL=[
   './','./index.html','./login.html','./history.html','./calendar.html','./settings.html',
