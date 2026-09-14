@@ -4,16 +4,30 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#090d14">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PA Gold">
   <meta http-equiv="Cache-Control" content="no-store">
   <title>Positive Arena Gold Settings</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="icon-192.svg">
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body data-page="settings">
   <main class="wrap">
     <header class="top">
-      <div class="brand"><div class="logo">AU</div><div><div class="ey">POSITIVE ARENA</div><div class="title">Gold App Settings</div></div></div>
+      <div class="brand"><img src="favicon.svg" style="width:44px;height:44px;border-radius:12px" alt="Positive Arena"><div><div class="ey">POSITIVE ARENA</div><div class="title">Gold App Settings</div></div></div>
       <div class="top-actions"><div class="gold-only">XAUUSD ONLY</div><div id="trialBadge" class="trial-badge">30-DAY TRIAL</div></div>
     </header>
+
+    <section class="card">
+      <div class="ey">INSTALL ON YOUR PHONE</div>
+      <div class="panel-body"><b>Positive Arena Gold App</b><br>Install this test app on your phone for full-screen access and a home-screen icon.</div>
+      <button class="refresh" style="width:100%;margin-top:14px" type="button" data-install-app>Install Positive Arena App</button>
+      <div class="small" style="margin-top:10px" data-install-note>Preparing app installation…</div>
+    </section>
 
     <section class="card">
       <div class="ey">TEST ACCESS</div>
@@ -49,6 +63,7 @@
     <a class="active" href="settings.html">Settings</a>
   </nav>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="pwa.js"></script>
   <script src="auth.js"></script>
   <script src="app.js" defer></script>
 </body>
