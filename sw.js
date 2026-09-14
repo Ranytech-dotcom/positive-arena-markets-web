@@ -1,4 +1,5 @@
-const CACHE='pa-gold-pwa-v1';
+const CACHE='pa-gold-pwa-v2';
+const APP_URL='./index.html';
 const SHELL=[
   './','./index.html','./login.html','./history.html','./calendar.html','./settings.html',
   './forgot-password.html','./reset-password.html','./trial-expired.html','./validation.html',
@@ -14,6 +15,38 @@ self.addEventListener('install',event=>{
 self.addEventListener('activate',event=>{
   event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
   self.clients.claim();
+});
+
+self.addEventListener('push',event=>{
+  let data={};
+  try{data=event.data?.json?.()||{}}catch{
+    try{data={body:event.data?.text?.()||''}}catch{}
+  }
+  const title=data.title||'Positive Arena Gold Alert';
+  const options={
+    body:data.body||'A new Gold signal update is available.',
+    icon:'./icon-192.svg',
+    badge:'./icon-192.svg',
+    tag:data.tag||'positive-arena-gold',
+    renotify:true,
+    data:{...data,url:APP_URL}
+  };
+  event.waitUntil(self.registration.showNotification(title,options));
+});
+
+self.addEventListener('notificationclick',event=>{
+  event.notification.close();
+  const target=new URL(APP_URL,self.registration.scope).href;
+  event.waitUntil((async()=>{
+    const list=await clients.matchAll({type:'window',includeUncontrolled:true});
+    for(const client of list){
+      if(new URL(client.url).origin===new URL(target).origin){
+        if('navigate' in client)await client.navigate(target);
+        return client.focus();
+      }
+    }
+    return clients.openWindow(target);
+  })());
 });
 
 self.addEventListener('fetch',event=>{
