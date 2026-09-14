@@ -4,6 +4,8 @@
   let results=[];
   let activeFilter='ALL';
   let deferredPrompt=null;
+  let loading=false;
+  let lastUpdatedAt=null;
 
   const $=s=>document.querySelector(s);
   const $$=s=>Array.from(document.querySelectorAll(s));
@@ -27,21 +29,27 @@
     if(v==='DOUBLE_CHANCE')return 'DOUBLE_CHANCE';
     return v||'OTHER';
   }
+  function updateLastUpdated(){
+    const el=$('#lastUpdated');if(!el)return;
+    el.textContent=lastUpdatedAt?`Live • Updated ${formatWatTime(lastUpdatedAt)} WAT`:'Live • Auto-updating';
+  }
 
   function renderSignals(){
     const feed=$('#signalFeed');if(!feed)return;
-    const rows=signals.filter(s=>activeFilter==='ALL'||marketGroup(s.market_group)===activeFilter);
-    $('#todayCount').textContent=signals.length;
-    $('#eliteCount').textContent=signals.filter(s=>String(s.grade).toUpperCase().includes('ELITE')).length;
-    $('#strongCount').textContent=signals.filter(s=>String(s.grade).toUpperCase().includes('STRONG')).length;
-    if(!rows.length){feed.innerHTML='<div class="empty-card"><b>No Core signal released yet.</b><br><br>Positive Arena only releases a selection after its evidence and contradiction gates pass.</div>';return;}
+    const now=Date.now();
+    const upcoming=signals.filter(s=>new Date(s.kickoff_at).getTime()>now);
+    const rows=upcoming.filter(s=>activeFilter==='ALL'||marketGroup(s.market_group)===activeFilter);
+    $('#todayCount').textContent=upcoming.length;
+    $('#eliteCount').textContent=upcoming.filter(s=>String(s.grade).toUpperCase().includes('ELITE')).length;
+    $('#strongCount').textContent=upcoming.filter(s=>String(s.grade).toUpperCase().includes('STRONG')).length;
+    if(!rows.length){feed.innerHTML='<div class="empty-card"><b>No upcoming Core signal released yet.</b><br><br>Positive Arena only shows signals that have passed every release gate and have not kicked off.</div>';return;}
     feed.innerHTML=rows.map(s=>{
       const grade=String(s.grade||'STRONG CORE').toUpperCase(),gradeClass=grade.includes('ELITE')?'grade-elite':'grade-strong';
       const odds=s.odds!==null&&s.odds!==undefined?Number(s.odds).toFixed(2):'';
       const score=s.confidence!==null&&s.confidence!==undefined?Math.round(Number(s.confidence)):null;
       return `<article class="signal-card">
         <div class="signal-top"><div><div class="league">${esc(s.competition)}</div><h4>${esc(s.home_team)} vs ${esc(s.away_team)}</h4></div><span class="market-badge">${esc(s.selection)}</span></div>
-        <div class="signal-meta"><span>${esc(formatWatTime(s.kickoff_at))} WAT</span>${odds?`<span>Odds ${esc(odds)}</span>`:''}<span>${esc(marketGroup(s.market_group))}</span><span class="${gradeClass}">${esc(grade)}</span>${score!=null?`<span>Engine ${score}/100</span>`:''}</div>
+        <div class="signal-meta"><span>${esc(formatWatTime(s.kickoff_at))} WAT</span>${odds?`<span>Odds ${esc(odds)}</span>`:''}<span>${esc(marketGroup(s.market_group))}</span><span class="${gradeClass}">${esc(grade)}</span>${score!=null?`<span>Model score ${score}/100</span>`:''}</div>
         ${s.rationale?`<p class="reason">${esc(s.rationale)}</p>`:''}
       </article>`;
     }).join('');
@@ -51,37 +59,50 @@
     const won=results.filter(r=>r.result_status==='WON').length,lost=results.filter(r=>r.result_status==='LOST').length,voided=results.filter(r=>r.result_status==='VOID').length,settled=won+lost;
     $('#wonCount').textContent=won;$('#lostCount').textContent=lost;$('#voidCount').textContent=voided;$('#strikeRate').textContent=settled?`${Math.round((won/settled)*100)}%`:'—';
     const note=$('#resultsNote'),list=$('#resultList');
-    if(!results.length){if(note){note.hidden=false;note.textContent='No settled Positive Arena Football signals yet.';}if(list)list.innerHTML='';return;}
+    if(!results.length){if(note){note.hidden=false;note.textContent='No started or settled Positive Arena Football signals yet.';}if(list)list.innerHTML='';return;}
     if(note)note.hidden=true;
     if(list)list.innerHTML=results.map(r=>{
-      const status=String(r.result_status||'').toUpperCase();
-      const cls=status==='WON'?'grade-strong':status==='LOST'?'result-lost':'grade-elite';
+      const status=String(r.result_status||'PENDING').toUpperCase();
+      const cls=status==='WON'?'grade-strong':status==='LOST'?'result-lost':status==='PENDING'?'result-pending':'grade-elite';
+      const label=status==='PENDING'?'PENDING':status;
       return `<article class="signal-card result-card">
-        <div class="signal-top"><div><div class="league">${esc(r.competition)} · ${esc(formatWatDate(r.kickoff_at))}</div><h4>${esc(r.home_team)} vs ${esc(r.away_team)}</h4></div><span class="market-badge ${cls}">${esc(status)}</span></div>
+        <div class="signal-top"><div><div class="league">${esc(r.competition)} · ${esc(formatWatDate(r.kickoff_at))}</div><h4>${esc(r.home_team)} vs ${esc(r.away_team)}</h4></div><span class="market-badge ${cls}">${esc(label)}</span></div>
         <div class="signal-meta"><span>${esc(r.selection)}</span>${r.result_score?`<span>FT ${esc(r.result_score)}</span>`:''}<span>${esc(r.grade||'CORE')}</span></div>
+        ${status==='PENDING'?'<p class="reason pending-note">Match started • awaiting confirmed final result.</p>':''}
       </article>`;
     }).join('');
   }
 
-  async function loadData(){
-    await window.PAF_AUTH_READY;
-    const sb=window.PAF_SUPABASE,{start,end}=watDayRange(),refresh=$('#refreshBtn');if(refresh){refresh.disabled=true;refresh.textContent='Loading…';}
-    const [todayRes,resultsRes,adminRes]=await Promise.all([
-      sb.from('football_signals').select('id,competition,home_team,away_team,kickoff_at,market_group,selection,odds,grade,confidence,rationale,result_status').eq('published',true).gte('kickoff_at',start).lt('kickoff_at',end).order('kickoff_at',{ascending:true}),
-      sb.from('football_signals').select('id,competition,home_team,away_team,kickoff_at,selection,grade,result_status,result_score').eq('published',true).neq('result_status','PENDING').order('kickoff_at',{ascending:false}).limit(100),
-      sb.from('football_admins').select('role').eq('user_id',window.PAF_SESSION.user.id).maybeSingle()
-    ]);
-    if(todayRes.error){console.error('Football signals load failed',todayRes.error);signals=[];const feed=$('#signalFeed');if(feed)feed.innerHTML='<div class="empty-card"><b>Could not load football signals.</b><br><br>Check your connection and try Refresh.</div>';}else{signals=todayRes.data||[];renderSignals();}
-    results=resultsRes.error?[]:(resultsRes.data||[]);renderResults();
-    const adminLink=$('#adminLink');if(adminLink&&!adminRes.error&&adminRes.data)adminLink.hidden=false;
-    if(refresh){refresh.disabled=false;refresh.textContent='Refresh';}
+  async function loadData({silent=false}={}){
+    if(loading)return;
+    loading=true;
+    const refresh=$('#refreshBtn');
+    try{
+      await window.PAF_AUTH_READY;
+      const sb=window.PAF_SUPABASE,{start,end}=watDayRange(),nowIso=new Date().toISOString();
+      if(refresh&&!silent){refresh.disabled=true;refresh.textContent='Loading…';}
+      $('#todayLabel').textContent=todayWat();
+      const [todayRes,resultsRes,adminRes]=await Promise.all([
+        sb.from('football_signals').select('id,competition,home_team,away_team,kickoff_at,market_group,selection,odds,grade,confidence,rationale,result_status').eq('published',true).gte('kickoff_at',start).lt('kickoff_at',end).gt('kickoff_at',nowIso).order('kickoff_at',{ascending:true}),
+        sb.from('football_signals').select('id,competition,home_team,away_team,kickoff_at,selection,grade,result_status,result_score').eq('published',true).lte('kickoff_at',nowIso).order('kickoff_at',{ascending:false}).limit(100),
+        sb.from('football_admins').select('role').eq('user_id',window.PAF_SESSION.user.id).maybeSingle()
+      ]);
+      if(todayRes.error){console.error('Football signals load failed',todayRes.error);signals=[];const feed=$('#signalFeed');if(feed)feed.innerHTML='<div class="empty-card"><b>Could not load football signals.</b><br><br>Check your connection and try Refresh.</div>';}else{signals=todayRes.data||[];renderSignals();}
+      results=resultsRes.error?[]:(resultsRes.data||[]);renderResults();
+      const adminLink=$('#adminLink');if(adminLink&&!adminRes.error&&adminRes.data)adminLink.hidden=false;
+      lastUpdatedAt=new Date();updateLastUpdated();
+    }finally{
+      if(refresh){refresh.disabled=false;refresh.textContent='Refresh';}
+      loading=false;
+    }
   }
 
   function showView(name){$$('.view').forEach(v=>v.classList.toggle('active',v.dataset.view===name));$$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.nav===name));window.scrollTo({top:0,behavior:'smooth'});}
   $$('.nav-btn').forEach(btn=>btn.addEventListener('click',()=>showView(btn.dataset.nav)));
   $$('#homeFilters .chip').forEach(btn=>btn.addEventListener('click',()=>{activeFilter=btn.dataset.filter;$$('#homeFilters .chip').forEach(b=>b.classList.toggle('active',b===btn));renderSignals();}));
-  $('#refreshBtn')?.addEventListener('click',loadData);
+  $('#refreshBtn')?.addEventListener('click',()=>loadData());
   $('#todayLabel').textContent=todayWat();
+  updateLastUpdated();
 
   const base64ToBytes=base64=>{
     const padding='='.repeat((4-base64.length%4)%4),raw=atob((base64+padding).replace(/-/g,'+').replace(/_/g,'/'));
@@ -111,5 +132,10 @@
   });
 
   if('serviceWorker' in navigator){window.addEventListener('load',async()=>{try{const reg=await navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'});await reg.update();await refreshNotificationUI();}catch{}});}
+
+  setInterval(()=>{renderSignals();},30000);
+  setInterval(()=>{loadData({silent:true}).catch(err=>console.error('Football auto refresh failed',err));},120000);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')loadData({silent:true}).catch(()=>{});});
+
   renderSignals();renderResults();loadData().catch(err=>console.error('Football app startup failed',err));
 })();
