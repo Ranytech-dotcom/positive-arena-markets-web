@@ -12,7 +12,7 @@
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
-  <style>html:not(.auth-ready) body{visibility:hidden}.danger-btn{width:100%;margin-top:10px;border:1px solid rgba(255,107,123,.28);background:rgba(255,107,123,.06);color:#ff8b98;border-radius:15px;padding:13px;font-weight:900}</style>
+  <style>html:not(.auth-ready) body{visibility:hidden}.danger-btn{width:100%;margin-top:10px;border:1px solid rgba(255,107,123,.28);background:rgba(255,107,123,.06);color:#ff8b98;border-radius:15px;padding:13px;font-weight:900}.admin-link{text-decoration:none;text-align:center}</style>
 </head>
 <body>
   <main class="app-shell">
@@ -101,6 +101,7 @@
         <div class="profile-line"><span>Trial</span><strong id="trialInfo">Checking…</strong></div>
         <div class="profile-line"><span>Timezone</span><strong>Africa/Lagos</strong></div>
         <div class="profile-line"><span>Signal policy</span><strong>Strong / Elite only</strong></div>
+        <a id="adminLink" class="primary-btn admin-link" href="admin.html" hidden>Open Football Admin</a>
         <button class="primary-btn" type="button" data-install-app>Install Positive Arena Football</button>
         <p class="muted" data-install-note>Preparing app installation…</p>
         <button class="danger-btn" type="button" onclick="PAF_SIGN_OUT()">Sign out</button>
