@@ -13,6 +13,7 @@
 
   const fmt=value=>new Intl.DateTimeFormat('en-NG',{timeZone:'Africa/Lagos',day:'2-digit',month:'short',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true}).format(new Date(value));
   const slug=s=>String(s||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const pretty=s=>String(s||'').replaceAll('_',' ').toLowerCase().replace(/\b\w/g,m=>m.toUpperCase());
   const localToIso=value=>new Date(`${value}:00+01:00`).toISOString();
   const isoToLocal=value=>{
     const d=new Date(value);
@@ -67,18 +68,36 @@
     const map=new Map(candidates.map(c=>[c.fixture_id,c]));
     const waiting=candidates.filter(c=>String(c.decision).toUpperCase()==='WAIT').length;
     const ready=candidates.filter(c=>String(c.decision).toUpperCase()==='READY').length;
+    const enriched=candidates.filter(c=>c?.evidence?.stage==='evidence_enriched').length;
     $('#fixtureCount').textContent=fixtures.length;
     $('#waitingCount').textContent=waiting;
     $('#readyCount').textContent=ready;
+    $('#enrichedCount').textContent=enriched;
     if(!fixtures.length){list.innerHTML='<div class="admin-empty">No imported fixtures for this date yet.</div>';return;}
-    list.innerHTML=fixtures.slice(0,50).map(f=>{
+    list.innerHTML=fixtures.slice(0,80).map(f=>{
       const c=map.get(f.id);
       const decision=String(c?.decision||'NOT SCANNED').toUpperCase();
-      const gaps=Array.isArray(c?.data_gaps)?c.data_gaps.length:0;
+      const gaps=Array.isArray(c?.data_gaps)?c.data_gaps:[];
+      const evidence=c?.evidence||{};
+      const coverage=Number.isFinite(Number(evidence.coverage_score))?Math.round(Number(evidence.coverage_score)):Number.isFinite(Number(c?.score))?Math.round(Number(c.score)):null;
+      const quality=String(evidence.quality_grade||f.data_quality||'BASIC').toUpperCase();
       const decisionClass=decision==='READY'?'ready':decision==='WAIT'?'waiting':'';
+      const gapPreview=gaps.slice(0,3).map(g=>`<span class="gap-tag">${esc(pretty(g))}</span>`).join('');
       return `<article class="fixture-row" data-fixture-id="${esc(f.id)}">
-        <div class="fixture-main"><div class="sub">${esc(f.competition)}${f.country?` · ${esc(f.country)}`:''}</div><h4>${esc(f.home_team)} vs ${esc(f.away_team)}</h4><div class="sub">${esc(fmt(f.kickoff_at))} WAT · ${esc(f.status||'NS')}</div></div>
-        <div class="fixture-side"><span class="fixture-decision ${decisionClass}">${esc(decision)}</span><span class="gap-count">${gaps} data gap${gaps===1?'':'s'}</span><button type="button" class="small-action" data-use-fixture="${esc(f.id)}">Use fixture</button></div>
+        <div class="fixture-main">
+          <div class="sub">${esc(f.competition)}${f.country?` · ${esc(f.country)}`:''}</div>
+          <h4>${esc(f.home_team)} vs ${esc(f.away_team)}</h4>
+          <div class="sub">${esc(fmt(f.kickoff_at))} WAT · ${esc(f.status||'NS')}</div>
+          <div class="fixture-evidence">${coverage!=null?`<span>Coverage <b>${coverage}%</b></span>`:'<span>Coverage —</span>'}<span>Quality <b>${esc(quality)}</b></span>${gapPreview}</div>
+        </div>
+        <div class="fixture-side">
+          <span class="fixture-decision ${decisionClass}">${esc(decision)}</span>
+          <span class="gap-count">${gaps.length} data gap${gaps.length===1?'':'s'}</span>
+          <div class="fixture-buttons">
+            <button type="button" class="small-action" data-enrich-fixture="${esc(f.id)}">Enrich</button>
+            <button type="button" class="small-action" data-use-fixture="${esc(f.id)}">Use fixture</button>
+          </div>
+        </div>
       </article>`;
     }).join('');
   }
@@ -98,7 +117,7 @@
     if(!fixtures.length){candidates=[];renderPipeline();return;}
     const ids=fixtures.map(f=>f.id);
     const candidateRes=await sb.from('football_engine_candidates')
-      .select('id,fixture_id,engine,market_group,selection,grade,confidence,score,decision,data_gaps,contradictions,signal_id,updated_at')
+      .select('id,fixture_id,engine,market_group,selection,grade,confidence,score,decision,evidence,data_gaps,contradictions,signal_id,updated_at')
       .in('fixture_id',ids).order('created_at',{ascending:false});
     candidates=candidateRes.error?[]:(candidateRes.data||[]);
     renderPipeline();
@@ -125,7 +144,7 @@
     $('#editorTitle').textContent='Review imported fixture';
     $('#saveSignal').textContent='Save as draft';
     $('#cancelEdit').hidden=false;
-    msg('Fixture details loaded. Select a market only after your evidence checks pass.','info');
+    msg('Fixture details loaded. Select a market only after the evidence and contradiction gates pass.','info');
     document.querySelector('.editor-card')?.scrollIntoView({behavior:'smooth',block:'start'});
   }
 
@@ -133,6 +152,25 @@
     editingId=r.id;
     $('#competition').value=r.competition||'';$('#homeTeam').value=r.home_team||'';$('#awayTeam').value=r.away_team||'';$('#kickoff').value=isoToLocal(r.kickoff_at);$('#marketGroup').value=r.market_group;$('#selection').value=r.selection||'';$('#odds').value=r.odds??'';$('#grade').value=r.grade;$('#confidence').value=r.confidence??'';$('#rationale').value=r.rationale||'';$('#published').checked=!!r.published;
     $('#editorTitle').textContent='Edit signal';$('#saveSignal').textContent='Save changes';$('#cancelEdit').hidden=false;document.querySelector('.editor-card')?.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  async function edgeError(error,fallback){
+    let detail=error?.message||fallback;
+    try{if(error?.context){const body=await error.context.json();detail=body?.error||body?.message||detail;}}catch{}
+    return detail;
+  }
+
+  async function enrichEvidence(body,button){
+    const old=button?.textContent;
+    if(button){button.disabled=true;button.textContent='Enriching…';}
+    syncMsg('Building evidence from recent matches. Missing provider data will remain a visible gap; nothing will be published.');
+    const {data,error}=await sb.functions.invoke('football-evidence-enrich',{body});
+    if(button){button.disabled=false;button.textContent=old;}
+    if(error){syncMsg(await edgeError(error,'Evidence enrichment failed.'),'error');return false;}
+    if(!data?.ok){syncMsg(data?.error||'Evidence enrichment did not complete.','error');return false;}
+    syncMsg(`${data.message||'Evidence enrichment complete'} Selected ${data.fixtures_selected||0} · enriched ${data.enriched||0} · ready ${data.ready||0} · failed ${data.failed||0}.`,'ok');
+    await loadPipeline();
+    return true;
   }
 
   $('#signalForm').addEventListener('submit',async e=>{
@@ -153,19 +191,22 @@
     const date=$('#syncDate').value||watDate();
     btn.disabled=true;btn.textContent='Syncing…';syncMsg('Importing fixtures. Nothing will be auto-published.');
     const {data,error}=await sb.functions.invoke('football-fixture-intake',{body:{date}});
-    btn.disabled=false;btn.textContent='Sync fixtures';
-    if(error){
-      let detail=error.message||'Fixture sync failed.';
-      try{if(error.context){const body=await error.context.json();detail=body?.error||body?.message||detail;}}catch{}
-      syncMsg(detail,'error');return;
-    }
+    btn.disabled=false;btn.textContent='1. Sync fixtures';
+    if(error){syncMsg(await edgeError(error,'Fixture sync failed.'),'error');return;}
     if(!data?.ok){syncMsg(data?.error||'Fixture sync did not complete.','error');return;}
     syncMsg(`${data.message||'Fixture sync complete'} Seen ${data.fixtures_seen||0} · saved ${data.fixtures_written||0} · waiting candidates ${data.candidates_created||0}.`,'ok');
     await loadPipeline();
   });
 
+  $('#enrichEvidence')?.addEventListener('click',async()=>{
+    const date=$('#syncDate').value||watDate();
+    await enrichEvidence({date,limit:12},$('#enrichEvidence'));
+  });
+
   $('#syncDate')?.addEventListener('change',()=>{syncMsg('');loadPipeline();});
-  $('#fixtureList')?.addEventListener('click',e=>{
+  $('#fixtureList')?.addEventListener('click',async e=>{
+    const enrichButton=e.target.closest('[data-enrich-fixture]');
+    if(enrichButton){await enrichEvidence({fixture_id:enrichButton.dataset.enrichFixture,limit:1},enrichButton);return;}
     const id=e.target.closest('[data-use-fixture]')?.dataset.useFixture;
     if(!id)return;
     const f=fixtures.find(x=>x.id===id);if(f)useFixture(f);
