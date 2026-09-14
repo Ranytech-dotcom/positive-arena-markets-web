@@ -22,12 +22,14 @@
     .submit{width:100%;margin-top:16px;border:1px solid #506486;background:#1b2740;color:#fff;border-radius:12px;padding:13px;font-weight:900;cursor:pointer}
     .msg{margin-top:12px;color:#9ba6b8;line-height:1.5;font-size:13px;min-height:20px}.msg.error{color:#ff7083}.msg.ok{color:#44d69b}
     .brand-center{display:flex;align-items:center;gap:10px}.mini{color:#9ba6b8;font-size:13px;line-height:1.5;margin-top:8px}
+    .trial-box{margin-top:14px;border:1px solid #55482a;background:#15130d;border-radius:15px;padding:13px;color:#e6bf5d;font-weight:850;line-height:1.45}
   </style>
 </head>
 <body>
   <main class="auth-shell">
     <div class="brand-center"><div class="logo">PA</div><div><div class="ey">POSITIVE ARENA</div><div class="title">Markets V6 Member Access</div></div></div>
-    <div class="mini">Create an account or sign in before viewing the trading dashboard.</div>
+    <div class="trial-box">🎁 New members get a 30-day free trial of the Markets V6 dashboard.</div>
+    <div class="mini">Create an account or sign in before viewing the trading dashboard. Your 30-day trial begins when your member dashboard is activated after login.</div>
 
     <section class="auth-card">
       <div class="auth-tabs">
@@ -46,7 +48,7 @@
         <div class="field"><label for="signupEmail">Email</label><input id="signupEmail" type="email" autocomplete="email" required></div>
         <div class="field"><label for="signupPassword">Password</label><div class="password-wrap"><input id="signupPassword" type="password" autocomplete="new-password" minlength="6" required><button class="show-btn" type="button" data-toggle="signupPassword">Show</button></div></div>
         <div class="field"><label for="signupConfirm">Confirm password</label><div class="password-wrap"><input id="signupConfirm" type="password" autocomplete="new-password" minlength="6" required><button class="show-btn" type="button" data-toggle="signupConfirm">Show</button></div></div>
-        <button class="submit" type="submit">Create Member Account</button>
+        <button class="submit" type="submit">Start 30-Day Free Trial</button>
         <div id="signupMsg" class="msg"></div>
       </form>
     </section>
@@ -91,7 +93,7 @@
       const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:redirectTo}});
       if(error){setMsg('signupMsg',error.message);return}
       if(data.session){location.replace(safeNext);return}
-      setMsg('signupMsg','Account created. Check your email to confirm your account, then return here to log in.',true);
+      setMsg('signupMsg','Account created. Check your email to confirm your account, then log in to start your 30-day free trial.',true);
     });
 
     sb.auth.getSession().then(({data})=>{if(data.session)location.replace(safeNext)});
