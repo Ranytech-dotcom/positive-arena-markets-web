@@ -15,25 +15,25 @@ const dayMs=24*60*60*1000;
 
   let {data:membership,error}=await sb
     .from('market_memberships')
-    .select('user_id,plan,access_status,trial_started_at,trial_ends_at,paid_until')
+    .select('user_id,plan,access_status,trial_started_at,trial_ends_at')
     .eq('user_id',session.user.id)
     .maybeSingle();
 
   if(error){
-    console.error('Membership lookup failed',error);
-    location.replace('trial-expired.html?reason=membership_error');
+    console.error('Trial lookup failed',error);
+    location.replace('trial-expired.html?reason=trial_error');
     return;
   }
 
   if(!membership){
     const created=await sb
       .from('market_memberships')
-      .insert({user_id:session.user.id})
-      .select('user_id,plan,access_status,trial_started_at,trial_ends_at,paid_until')
+      .insert({user_id:session.user.id,plan:'trial',access_status:'active'})
+      .select('user_id,plan,access_status,trial_started_at,trial_ends_at')
       .single();
     if(created.error||!created.data){
-      console.error('Membership creation failed',created.error);
-      location.replace('trial-expired.html?reason=membership_error');
+      console.error('Trial creation failed',created.error);
+      location.replace('trial-expired.html?reason=trial_error');
       return;
     }
     membership=created.data;
@@ -41,38 +41,26 @@ const dayMs=24*60*60*1000;
 
   const now=Date.now();
   const trialEnd=membership.trial_ends_at?new Date(membership.trial_ends_at).getTime():0;
-  const paidEnd=membership.paid_until?new Date(membership.paid_until).getTime():0;
-  const activeTrial=membership.plan==='trial'&&trialEnd>now;
-  const activePaid=membership.plan==='paid'&&paidEnd>now;
-  const activeLifetime=membership.plan==='lifetime';
-  const allowed=membership.access_status==='active'&&(activeTrial||activePaid||activeLifetime);
+  const activeTrial=membership.plan==='trial'&&membership.access_status==='active'&&trialEnd>now;
 
-  if(!allowed){
+  if(!activeTrial){
     location.replace('trial-expired.html');
     return;
   }
 
-  const daysRemaining=activeTrial?Math.max(1,Math.ceil((trialEnd-now)/dayMs)):null;
+  const daysRemaining=Math.max(1,Math.ceil((trialEnd-now)/dayMs));
   window.PA_MEMBERSHIP={...membership,daysRemaining};
 
   const userEmail=document.getElementById('memberEmail');
   if(userEmail) userEmail.textContent=session.user?.email||'Member';
 
   const trialBadge=document.getElementById('trialBadge');
-  if(trialBadge){
-    trialBadge.textContent=activeTrial?`TRIAL ${daysRemaining} DAY${daysRemaining===1?'':'S'} LEFT`:membership.plan.toUpperCase();
-  }
+  if(trialBadge) trialBadge.textContent=`TRIAL ${daysRemaining} DAY${daysRemaining===1?'':'S'} LEFT`;
 
   const trialInfo=document.getElementById('trialInfo');
   if(trialInfo){
-    if(activeTrial){
-      const endText=new Date(membership.trial_ends_at).toLocaleString([], {dateStyle:'medium',timeStyle:'short'});
-      trialInfo.innerHTML=`30-day free trial active.<br><b>${daysRemaining} day${daysRemaining===1?'':'s'} remaining</b><br>Trial ends: ${endText}`;
-    }else if(activePaid){
-      trialInfo.textContent='Paid membership active.';
-    }else{
-      trialInfo.textContent='Lifetime membership active.';
-    }
+    const endText=new Date(membership.trial_ends_at).toLocaleString([], {dateStyle:'medium',timeStyle:'short'});
+    trialInfo.innerHTML=`30-day test trial active.<br><b>${daysRemaining} day${daysRemaining===1?'':'s'} remaining</b><br>Trial ends: ${endText}`;
   }
 
   document.documentElement.classList.add('auth-ready');
