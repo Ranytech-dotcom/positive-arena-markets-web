@@ -21,6 +21,7 @@
     .field input{width:100%;background:#0d131c;color:#fff;border:1px solid #283246;border-radius:12px;padding:13px;font-size:16px;outline:none}
     .password-wrap{position:relative}.password-wrap input{padding-right:78px}
     .show-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:#1b2740;color:#fff;border-radius:9px;padding:8px 10px;font-size:12px;font-weight:800;cursor:pointer}
+    .forgot-link{display:block;text-align:right;margin-top:9px;color:#e6bf5d;text-decoration:none;font-size:13px;font-weight:800}
     .submit{width:100%;margin-top:16px;border:1px solid #506486;background:#1b2740;color:#fff;border-radius:12px;padding:13px;font-weight:900;cursor:pointer}
     .msg{margin-top:12px;color:#9ba6b8;line-height:1.5;font-size:13px;min-height:20px}.msg.error{color:#ff7083}.msg.ok{color:#44d69b}
     .brand-center{display:flex;align-items:center;gap:12px}.mini{color:#9ba6b8;font-size:13px;line-height:1.5;margin-top:8px}
@@ -43,6 +44,7 @@
       <form id="loginForm" class="auth-form active">
         <div class="field"><label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="email" required></div>
         <div class="field"><label for="loginPassword">Password</label><div class="password-wrap"><input id="loginPassword" type="password" autocomplete="current-password" minlength="6" required><button class="show-btn" type="button" data-toggle="loginPassword">Show</button></div></div>
+        <a class="forgot-link" href="forgot-password.html">Forgot password?</a>
         <button class="submit" type="submit">Login to Gold Dashboard</button>
         <div id="loginMsg" class="msg"></div>
       </form>
