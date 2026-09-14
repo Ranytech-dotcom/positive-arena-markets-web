@@ -21,9 +21,10 @@
     .field input{width:100%;background:#0d131c;color:#fff;border:1px solid #283246;border-radius:12px;padding:13px;font-size:16px;outline:none}
     .password-wrap{position:relative}.password-wrap input{padding-right:78px}
     .show-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:#1b2740;color:#fff;border-radius:9px;padding:8px 10px;font-size:12px;font-weight:800;cursor:pointer}
-    .forgot-link{display:block;text-align:right;margin-top:9px;color:#e6bf5d;text-decoration:none;font-size:13px;font-weight:800}
     .submit{width:100%;margin-top:16px;border:1px solid #506486;background:#1b2740;color:#fff;border-radius:12px;padding:13px;font-weight:900;cursor:pointer}
-    .msg{margin-top:12px;color:#9ba6b8;line-height:1.5;font-size:13px;min-height:20px}.msg.error{color:#ff7083}.msg.ok{color:#44d69b}
+    .text-btn{width:100%;margin-top:10px;border:0;background:transparent;color:#e6bf5d;padding:8px;font-weight:800;cursor:pointer;text-decoration:underline}
+    .auth-links{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:10px}.auth-links a,.auth-links button{border:0;background:transparent;color:#9fb8ef;padding:0;font-size:13px;font-weight:800;cursor:pointer;text-decoration:underline}
+    .msg{margin-top:12px;color:#9ba6b8;line-height:1.5;font-size:13px;min-height:20px}.msg.error{color:#ff7083}.msg.ok{color:#44d69b}.msg.info{color:#e6bf5d}
     .brand-center{display:flex;align-items:center;gap:12px}.mini{color:#9ba6b8;font-size:13px;line-height:1.5;margin-top:8px}
     .app-icon{width:52px;height:52px;border-radius:14px;display:block}
     .trial-box{margin-top:14px;border:1px solid #55482a;background:#15130d;border-radius:15px;padding:13px;color:#e6bf5d;font-weight:850;line-height:1.45}
@@ -44,8 +45,11 @@
       <form id="loginForm" class="auth-form active">
         <div class="field"><label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="email" required></div>
         <div class="field"><label for="loginPassword">Password</label><div class="password-wrap"><input id="loginPassword" type="password" autocomplete="current-password" minlength="6" required><button class="show-btn" type="button" data-toggle="loginPassword">Show</button></div></div>
-        <a class="forgot-link" href="forgot-password.html">Forgot password?</a>
         <button class="submit" type="submit">Login to Gold Dashboard</button>
+        <div class="auth-links">
+          <a href="forgot-password.html">Forgot password?</a>
+          <button id="resendBtn" type="button">Resend confirmation email</button>
+        </div>
         <div id="loginMsg" class="msg"></div>
       </form>
 
@@ -77,15 +81,30 @@
       btn.textContent=showing?'Show':'Hide';
     }));
 
-    const setMsg=(id,text,ok=false)=>{const e=document.getElementById(id);e.textContent=text||'';e.className='msg '+(text?(ok?'ok':'error'):'')};
+    const setMsg=(id,text,kind='error')=>{const e=document.getElementById(id);e.textContent=text||'';e.className='msg '+(text?kind:'')};
 
     document.getElementById('loginForm').addEventListener('submit',async e=>{
       e.preventDefault();setMsg('loginMsg','');
       const email=document.getElementById('loginEmail').value.trim();
       const password=document.getElementById('loginPassword').value;
       const {error}=await sb.auth.signInWithPassword({email,password});
-      if(error){setMsg('loginMsg',error.message);return}
+      if(error){
+        const msg=String(error.message||'Login failed.');
+        if(/confirm|verified/i.test(msg)) setMsg('loginMsg','Your email is not confirmed yet. Tap “Resend confirmation email” below.','info');
+        else setMsg('loginMsg',msg,'error');
+        return;
+      }
       location.replace(safeNext);
+    });
+
+    document.getElementById('resendBtn').addEventListener('click',async()=>{
+      const email=(document.getElementById('loginEmail').value||document.getElementById('signupEmail').value).trim();
+      if(!email){setMsg('loginMsg','Enter your email first, then tap Resend confirmation email.','info');return}
+      setMsg('loginMsg','Sending confirmation email…','info');
+      const redirectTo=new URL('login.html',location.href).href;
+      const {error}=await sb.auth.resend({type:'signup',email,options:{emailRedirectTo:redirectTo}});
+      if(error){setMsg('loginMsg',error.message||'Could not resend confirmation email.','error');return}
+      setMsg('loginMsg','Confirmation email requested. Check Inbox, Spam and Promotions.','ok');
     });
 
     document.getElementById('signupForm').addEventListener('submit',async e=>{
@@ -93,12 +112,17 @@
       const email=document.getElementById('signupEmail').value.trim();
       const password=document.getElementById('signupPassword').value;
       const confirm=document.getElementById('signupConfirm').value;
-      if(password!==confirm){setMsg('signupMsg','Passwords do not match.');return}
+      if(password!==confirm){setMsg('signupMsg','Passwords do not match.','error');return}
       const redirectTo=new URL('login.html',location.href).href;
       const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:redirectTo}});
-      if(error){setMsg('signupMsg',error.message);return}
+      if(error){setMsg('signupMsg',error.message,'error');return}
       if(data.session){location.replace(safeNext);return}
-      setMsg('signupMsg','Account created. Check your email to confirm your account, then log in to start the 30-day Gold test trial.',true);
+      const identities=data?.user?.identities||[];
+      if(data?.user && identities.length===0){
+        setMsg('signupMsg','This email may already have an account. Try Login or use Forgot password. If your email is still unconfirmed, use Resend confirmation email on the Login tab.','info');
+        return;
+      }
+      setMsg('signupMsg','Account created. A confirmation email has been requested. Check Inbox, Spam and Promotions, then return here to log in.','ok');
     });
 
     sb.auth.getSession().then(({data})=>{if(data.session)location.replace(safeNext)});
