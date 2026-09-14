@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07110d">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PA Football">
+  <title>Positive Arena Football — Member Access</title>
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body{min-height:100vh;display:grid;place-items:center;padding:24px 14px}.auth-shell{width:min(100%,440px)}.auth-brand{display:flex;align-items:center;gap:12px;margin-bottom:14px}.auth-brand .logo{width:54px;height:54px}.auth-brand h1{font-size:24px}.auth-card{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:var(--shadow)}.trial-box{border:1px solid rgba(243,200,104,.28);background:rgba(243,200,104,.06);color:var(--gold);border-radius:16px;padding:13px 14px;font-size:13px;font-weight:800;line-height:1.45;margin-bottom:14px}.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}.auth-tab{border:1px solid var(--line);background:#101c17;color:var(--muted);border-radius:12px;padding:11px;font-weight:850;cursor:pointer}.auth-tab.active{background:rgba(57,229,140,.12);color:var(--green);border-color:rgba(57,229,140,.3)}.auth-form{display:none}.auth-form.active{display:block}.field{margin-top:12px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:7px;font-weight:800}.field input{width:100%;background:#09120e;color:var(--text);border:1px solid var(--line);border-radius:13px;padding:13px;font-size:16px;outline:none}.password-wrap{position:relative}.password-wrap input{padding-right:76px}.show-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:#14271d;color:var(--green);border-radius:9px;padding:8px 10px;font-weight:800;cursor:pointer}.submit{width:100%;margin-top:16px;border:0;background:linear-gradient(135deg,var(--green),var(--green2));color:#041109;border-radius:13px;padding:14px;font-weight:950;cursor:pointer}.msg{min-height:20px;margin-top:12px;color:var(--muted);font-size:13px;line-height:1.5}.msg.error{color:var(--danger)}.msg.ok{color:var(--green)}.msg.info{color:var(--gold)}.small-link{border:0;background:transparent;color:var(--gold);padding:0;margin-top:9px;font-size:12px;font-weight:800;cursor:pointer;text-decoration:underline}.mini{color:var(--muted);font-size:13px;line-height:1.5;margin:0 0 14px}
+  </style>
+</head>
+<body>
+  <main class="auth-shell">
+    <div class="auth-brand"><img src="icon.svg" class="logo" alt="Positive Arena Football"><div><div class="eyebrow">POSITIVE ARENA</div><h1>Football</h1></div></div>
+    <div class="trial-box">⚽ 30-day free test access · Strong Core & Elite Core football signals.</div>
+    <p class="mini">Use your existing Positive Arena account or create one. Your football trial begins when you first open the football dashboard.</p>
+
+    <section class="auth-card">
+      <div class="auth-tabs"><button class="auth-tab active" data-tab="login" type="button">Login</button><button class="auth-tab" data-tab="signup" type="button">Sign Up</button></div>
+
+      <form id="loginForm" class="auth-form active">
+        <div class="field"><label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="email" required></div>
+        <div class="field"><label for="loginPassword">Password</label><div class="password-wrap"><input id="loginPassword" type="password" autocomplete="current-password" minlength="6" required><button class="show-btn" type="button" data-toggle="loginPassword">Show</button></div></div>
+        <button class="submit" type="submit">Open Football Dashboard</button>
+        <button id="resendBtn" class="small-link" type="button">Resend confirmation email</button>
+        <div id="loginMsg" class="msg"></div>
+      </form>
+
+      <form id="signupForm" class="auth-form">
+        <div class="field"><label for="signupEmail">Email</label><input id="signupEmail" type="email" autocomplete="email" required></div>
+        <div class="field"><label for="signupPassword">Password</label><div class="password-wrap"><input id="signupPassword" type="password" autocomplete="new-password" minlength="6" required><button class="show-btn" type="button" data-toggle="signupPassword">Show</button></div></div>
+        <div class="field"><label for="signupConfirm">Confirm password</label><div class="password-wrap"><input id="signupConfirm" type="password" autocomplete="new-password" minlength="6" required><button class="show-btn" type="button" data-toggle="signupConfirm">Show</button></div></div>
+        <button class="submit" type="submit">Create Football Account</button>
+        <div id="signupMsg" class="msg"></div>
+      </form>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const sb=window.supabase.createClient('https://nsmevyhcpqijreuwbqkv.supabase.co','sb_publishable_vmjgX7GlO7iB32tlZRPfBQ__qv6ZixS');
+    const next=new URLSearchParams(location.search).get('next')||'index.html';
+    const safeNext=/^[a-zA-Z0-9._-]+\.html$/.test(next)?next:'index.html';
+    const loginRedirect=new URL('login.html',location.href).href.split('?')[0];
+
+    const setMsg=(id,text,kind='error')=>{const el=document.getElementById(id);el.textContent=text||'';el.className='msg '+(text?kind:'')};
+    document.querySelectorAll('.auth-tab').forEach(btn=>btn.addEventListener('click',()=>{
+      document.querySelectorAll('.auth-tab').forEach(b=>b.classList.toggle('active',b===btn));
+      document.querySelectorAll('.auth-form').forEach(f=>f.classList.toggle('active',f.id===(btn.dataset.tab==='login'?'loginForm':'signupForm')));
+    }));
+    document.querySelectorAll('[data-toggle]').forEach(btn=>btn.addEventListener('click',()=>{
+      const input=document.getElementById(btn.dataset.toggle);const visible=input.type==='text';input.type=visible?'password':'text';btn.textContent=visible?'Show':'Hide';
+    }));
+
+    document.getElementById('loginForm').addEventListener('submit',async e=>{
+      e.preventDefault();setMsg('loginMsg','');
+      const email=document.getElementById('loginEmail').value.trim();
+      const password=document.getElementById('loginPassword').value;
+      const {error}=await sb.auth.signInWithPassword({email,password});
+      if(error){setMsg('loginMsg',error.message||'Login failed.','error');return;}
+      location.replace(safeNext);
+    });
+
+    document.getElementById('signupForm').addEventListener('submit',async e=>{
+      e.preventDefault();setMsg('signupMsg','');
+      const email=document.getElementById('signupEmail').value.trim();
+      const password=document.getElementById('signupPassword').value;
+      const confirm=document.getElementById('signupConfirm').value;
+      if(password!==confirm){setMsg('signupMsg','Passwords do not match.','error');return;}
+      const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:loginRedirect}});
+      if(error){setMsg('signupMsg',error.message||'Sign up failed.','error');return;}
+      if(data.session){location.replace(safeNext);return;}
+      const identities=data?.user?.identities||[];
+      if(data?.user&&identities.length===0){setMsg('signupMsg','This email may already have an account. Try Login instead.','info');return;}
+      setMsg('signupMsg','Account created. Check your email to confirm it, then return here and log in.','ok');
+    });
+
+    document.getElementById('resendBtn').addEventListener('click',async()=>{
+      const email=(document.getElementById('loginEmail').value||document.getElementById('signupEmail').value).trim();
+      if(!email){setMsg('loginMsg','Enter your email first.','info');return;}
+      setMsg('loginMsg','Sending confirmation email…','info');
+      const {error}=await sb.auth.resend({type:'signup',email,options:{emailRedirectTo:loginRedirect}});
+      setMsg('loginMsg',error?(error.message||'Could not resend confirmation email.'):'Confirmation email requested. Check Inbox, Spam and Promotions.',error?'error':'ok');
+    });
+
+    sb.auth.getSession().then(({data})=>{if(data.session)location.replace(safeNext)});
+    if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).catch(()=>{}));
+  </script>
+</body>
+</html>
