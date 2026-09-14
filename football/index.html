@@ -12,17 +12,14 @@
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
-  <style>html:not(.auth-ready) body{visibility:hidden}.danger-btn{width:100%;margin-top:10px;border:1px solid rgba(255,107,123,.28);background:rgba(255,107,123,.06);color:#ff8b98;border-radius:15px;padding:13px;font-weight:900}.admin-link{text-decoration:none;text-align:center}</style>
+  <style>html:not(.auth-ready) body{visibility:hidden}.danger-btn{width:100%;margin-top:10px;border:1px solid rgba(255,107,123,.28);background:rgba(255,107,123,.06);color:#ff8b98;border-radius:15px;padding:13px;font-weight:900}.admin-link{text-decoration:none;text-align:center}.notification-btn.enabled{background:#11231a;color:#39e58c;border:1px solid rgba(57,229,140,.28)}</style>
 </head>
 <body>
   <main class="app-shell">
     <header class="topbar">
       <div class="brand">
         <img src="icon.svg" alt="Positive Arena Football" class="logo">
-        <div>
-          <div class="eyebrow">POSITIVE ARENA</div>
-          <h1>Football</h1>
-        </div>
+        <div><div class="eyebrow">POSITIVE ARENA</div><h1>Football</h1></div>
       </div>
       <div class="beta-pill" id="trialBadge">30-DAY TRIAL</div>
     </header>
@@ -31,15 +28,12 @@
       <div>
         <div class="eyebrow">PROFESSIONAL FOOTBALL SIGNALS</div>
         <h2>Strong picks. No forced bets.</h2>
-        <p>Only Strong Core and Elite Core selections make the feed. Weak or contradictory fixtures are rejected.</p>
+        <p>Every released selection has passed the evidence and contradiction gates. Weak fixtures remain NO BET.</p>
       </div>
       <div class="football-mark">⚽</div>
     </section>
 
-    <section class="meta-row">
-      <span id="todayLabel">TODAY</span>
-      <span>WAT • NIGERIA TIME</span>
-    </section>
+    <section class="meta-row"><span id="todayLabel">TODAY</span><span>WAT • NIGERIA TIME</span></section>
 
     <section class="view active" data-view="home">
       <div class="stats-grid">
@@ -47,41 +41,33 @@
         <article class="mini-card"><span>Elite</span><strong id="eliteCount">0</strong><small>Core</small></article>
         <article class="mini-card"><span>Strong</span><strong id="strongCount">0</strong><small>Core</small></article>
       </div>
-
-      <div class="section-head">
-        <div><div class="eyebrow">TODAY'S FEED</div><h3>Current signals</h3></div>
-        <button class="ghost-btn" id="refreshBtn" type="button">Refresh</button>
-      </div>
-
+      <div class="section-head"><div><div class="eyebrow">TODAY'S FEED</div><h3>Current signals</h3></div><button class="ghost-btn" id="refreshBtn" type="button">Refresh</button></div>
       <div class="filter-row" id="homeFilters">
         <button class="chip active" data-filter="ALL">All</button>
         <button class="chip" data-filter="WIN">Win</button>
         <button class="chip" data-filter="BTTS">BTTS</button>
         <button class="chip" data-filter="O2.5">O2.5</button>
         <button class="chip" data-filter="DRAW">Draw</button>
+        <button class="chip" data-filter="DOUBLE_CHANCE">Double Chance</button>
+        <button class="chip" data-filter="OTHER">Safer / Other</button>
       </div>
-
       <section id="signalFeed" class="signal-feed"><div class="empty-card">Loading football signals…</div></section>
     </section>
 
     <section class="view" data-view="core">
-      <div class="section-head solo">
-        <div><div class="eyebrow">CORE ENGINE</div><h3>Qualified markets</h3></div>
-      </div>
+      <div class="section-head solo"><div><div class="eyebrow">CORE ENGINE</div><h3>Qualified markets</h3></div></div>
       <div class="core-grid">
-        <article class="core-card"><b>WIN Core</b><span>Home / Away</span><small>Draw-risk gate required</small></article>
-        <article class="core-card"><b>BTTS Core</b><span>GG — YES</span><small>Both attacks must qualify</small></article>
-        <article class="core-card"><b>O2.5 Core</b><span>Over 2.5</span><small>Third-goal pathway required</small></article>
-        <article class="core-card"><b>Draw Core</b><span>Full-time X</span><small>Balance and equaliser pathways</small></article>
-        <article class="core-card"><b>Value Core</b><span>Underdog / big odds</span><small>Positive probability edge only</small></article>
-        <article class="core-card"><b>Rollover Core</b><span>1.50 / 4.00</span><small>No forced legs</small></article>
+        <article class="core-card"><b>WIN Core</b><span>Home / Away</span><small>Direct wins must clear the draw-risk gate.</small></article>
+        <article class="core-card"><b>BTTS Core</b><span>GG — YES</span><small>Both attacks must qualify independently.</small></article>
+        <article class="core-card"><b>Goal Core</b><span>O2.5 / U2.5 / strict O1.5</span><small>Chance quality and third-goal/two-goal pathways are tested.</small></article>
+        <article class="core-card"><b>Draw Core</b><span>Full-time X</span><small>Balance, xG closeness and failure scenarios are checked.</small></article>
+        <article class="core-card"><b>Safer Core</b><span>Double Chance / DNB</span><small>Used when protection is stronger than a straight winner.</small></article>
+        <article class="core-card"><b>Team Goals Core</b><span>Team Over 1.5</span><small>Own attack and opponent vulnerability must both pass.</small></article>
       </div>
     </section>
 
     <section class="view" data-view="results">
-      <div class="section-head solo">
-        <div><div class="eyebrow">PERFORMANCE</div><h3>Results</h3></div>
-      </div>
+      <div class="section-head solo"><div><div class="eyebrow">PERFORMANCE</div><h3>Results</h3></div></div>
       <div class="result-summary">
         <article><span>Won</span><strong id="wonCount">0</strong></article>
         <article><span>Lost</span><strong id="lostCount">0</strong></article>
@@ -89,12 +75,11 @@
         <article><span>Strike rate</span><strong id="strikeRate">—</strong></article>
       </div>
       <div id="resultsNote" class="empty-card">No settled Positive Arena Football signals yet.</div>
+      <div id="resultList" class="signal-feed"></div>
     </section>
 
     <section class="view" data-view="profile">
-      <div class="section-head solo">
-        <div><div class="eyebrow">ACCOUNT</div><h3>Profile</h3></div>
-      </div>
+      <div class="section-head solo"><div><div class="eyebrow">ACCOUNT</div><h3>Profile</h3></div></div>
       <div class="profile-card">
         <div class="profile-line"><span>Email</span><strong id="memberEmail">Member</strong></div>
         <div class="profile-line"><span>Access</span><strong>Football test mode</strong></div>
@@ -102,8 +87,11 @@
         <div class="profile-line"><span>Timezone</span><strong>Africa/Lagos</strong></div>
         <div class="profile-line"><span>Signal policy</span><strong>Strong / Elite only</strong></div>
         <a id="adminLink" class="primary-btn admin-link" href="admin.html" hidden>Open Football Admin</a>
+        <button id="notificationBtn" class="primary-btn notification-btn" type="button">🔔 Enable Core Notifications</button>
+        <p id="notificationNote" class="muted">Get an alert when a new football Core signal is published.</p>
         <button class="primary-btn" type="button" data-install-app>Install Positive Arena Football</button>
         <p class="muted" data-install-note>Preparing app installation…</p>
+        <p class="muted">Predictions are analytical signals, not guaranteed outcomes.</p>
         <button class="danger-btn" type="button" onclick="PAF_SIGN_OUT()">Sign out</button>
       </div>
     </section>
