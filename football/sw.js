@@ -1,4 +1,4 @@
-const CACHE='pa-football-v6';
+const CACHE='pa-football-v7';
 const APP_URL='./index.html';
 const SHELL=['./','./index.html','./login.html','./trial-expired.html','./styles.css','./app.js','./auth.js','./admin.html','./admin.css','./admin.js','./manifest.webmanifest','./icon.svg','./offline.html'];
 
