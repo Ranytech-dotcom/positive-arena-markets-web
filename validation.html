@@ -4,15 +4,22 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#090d14">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PA Gold">
   <meta http-equiv="Cache-Control" content="no-store">
   <title>Gold Validation — Positive Arena Markets V6</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="icon-192.svg">
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="validation.css">
 </head>
 <body data-page="validation">
   <main class="wrap">
     <header class="top">
-      <div class="brand"><div class="logo">AU</div><div><div class="ey">POSITIVE ARENA</div><div class="title">Gold Validation</div></div></div>
+      <div class="brand"><img src="favicon.svg" style="width:44px;height:44px;border-radius:12px" alt="Positive Arena"><div><div class="ey">POSITIVE ARENA</div><div class="title">Gold Validation</div></div></div>
       <a class="refresh" href="index.html">Markets</a>
     </header>
 
@@ -60,6 +67,7 @@
     <a href="settings.html">Settings</a>
   </nav>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="pwa.js"></script>
   <script src="auth.js"></script>
   <script src="validation.js" defer></script>
 </body>
