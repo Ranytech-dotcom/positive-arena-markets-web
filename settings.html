@@ -12,8 +12,14 @@
   <main class="wrap">
     <header class="top">
       <div class="brand"><div class="logo">PA</div><div><div class="ey">POSITIVE ARENA</div><div class="title">Markets Settings</div></div></div>
-      <div class="build">GITHUB WEB</div>
+      <div class="build">MEMBER WEB</div>
     </header>
+
+    <section class="card">
+      <div class="ey">MEMBERSHIP</div>
+      <div id="trialInfo" class="panel-body">Checking membership…</div>
+      <div class="panel-body">Signed in as <b id="memberEmail">Member</b></div>
+    </section>
 
     <section class="card">
       <div class="ey">ALERT CHANNELS</div>
@@ -35,6 +41,8 @@
     <a href="calendar.html">Calendar</a>
     <a class="active" href="settings.html">Settings</a>
   </nav>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
   <script src="app.js" defer></script>
 </body>
 </html>
