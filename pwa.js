@@ -56,8 +56,13 @@
   });
 
   if('serviceWorker' in navigator){
-    window.addEventListener('load',()=>{
-      navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(err=>console.warn('PWA service worker registration failed',err));
+    window.addEventListener('load',async()=>{
+      try{
+        const reg=await navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'});
+        await reg.update();
+      }catch(err){
+        console.warn('PWA service worker registration failed',err);
+      }
     });
   }
 
