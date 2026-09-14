@@ -1,0 +1,15 @@
+{
+  "id":"./",
+  "name":"Positive Arena Football",
+  "short_name":"PA Football",
+  "description":"Positive Arena professional football signals with Strong Core and Elite Core selections.",
+  "start_url":"./index.html",
+  "scope":"./",
+  "display":"standalone",
+  "background_color":"#07110d",
+  "theme_color":"#07110d",
+  "orientation":"portrait-primary",
+  "icons":[
+    {"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
