@@ -1,5 +1,5 @@
-const CACHE='pa-football-v1';
-const SHELL=['./','./index.html','./styles.css','./app.js','./manifest.webmanifest','./icon.svg','./offline.html'];
+const CACHE='pa-football-v2';
+const SHELL=['./','./index.html','./login.html','./trial-expired.html','./styles.css','./app.js','./auth.js','./manifest.webmanifest','./icon.svg','./offline.html'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).catch(()=>{}));self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
 self.addEventListener('fetch',event=>{
@@ -7,6 +7,7 @@ self.addEventListener('fetch',event=>{
   if(req.method!=='GET')return;
   const url=new URL(req.url);
   if(url.origin!==self.location.origin)return;
+  if(url.pathname.includes('/functions/v1/')||url.pathname.includes('/auth/v1/')||url.pathname.includes('/rest/v1/'))return;
   if(req.mode==='navigate'){
     event.respondWith(fetch(req).then(res=>{const copy=res.clone();caches.open(CACHE).then(c=>c.put(req,copy)).catch(()=>{});return res;}).catch(async()=>await caches.match(req)||await caches.match('./offline.html')));
     return;
