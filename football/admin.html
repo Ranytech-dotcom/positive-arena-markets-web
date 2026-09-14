@@ -30,31 +30,37 @@
 
     <div id="adminArea" hidden>
       <section class="admin-hero">
-        <div><div class="eyebrow">FOOTBALL CONTROL</div><h2>Fixtures → evidence → market gate → draft</h2><p>Import fixtures, enrich real match evidence, then allow only sufficiently covered fixtures to reach the market-selection gate. Nothing is auto-published.</p></div>
+        <div><div class="eyebrow">FULL PROFESSIONAL PIPELINE</div><h2>Fixtures → evidence → contradiction gate → draft</h2><p>The engine can run the full football workflow in one tap. Qualified selections are still saved as drafts first, so nothing is released to members until you publish it.</p></div>
         <div class="shield">⚽</div>
       </section>
 
       <section class="admin-card pipeline-card">
         <div class="admin-section-head">
-          <div><div class="eyebrow">ENGINE PIPELINE</div><h3>Fixture & evidence intake</h3></div>
-          <span class="pipeline-pill">DRAFT-FIRST</span>
+          <div><div class="eyebrow">ENGINE CONTROL</div><h3>Today’s football scan</h3></div>
+          <span class="pipeline-pill">NO FORCED PICKS</span>
         </div>
-        <p class="pipeline-copy">Stage 1 imports the Nigeria-time match day. Stage 2 enriches recent form, xG/xGA, shots, shots on target, box shots, big chances, home/away splits, rest, lineups and absences where the provider has coverage. Missing evidence stays visible as a data gap.</p>
-        <div class="sync-row">
+        <p class="pipeline-copy">The pipeline imports worldwide fixtures, enriches available xG/xGA, form, shots, SOT, box shots, big chances, home/away splits, rest, lineups and absences, compares WIN / DRAW / BTTS / O2.5 / U2.5 / strict O1.5 / Team O1.5 / Double Chance / DNB, then keeps only the strongest single market per fixture.</p>
+
+        <div class="full-run-row">
           <label>Fixture date (WAT)<input id="syncDate" type="date"></label>
-          <div class="pipeline-actions">
-            <button id="syncFixtures" class="admin-primary sync-button" type="button">1. Sync fixtures</button>
-            <button id="enrichEvidence" class="admin-secondary sync-button" type="button">2. Enrich evidence</button>
-          </div>
+          <button id="runFullPipeline" class="admin-primary full-run" type="button">⚡ Run Full Pipeline</button>
+        </div>
+        <div class="pipeline-actions step-actions">
+          <button id="syncFixtures" class="admin-secondary sync-button" type="button">1. Sync fixtures</button>
+          <button id="enrichEvidence" class="admin-secondary sync-button" type="button">2. Enrich evidence</button>
+          <button id="selectMarkets" class="admin-secondary sync-button" type="button">3. Market gate</button>
+          <button id="settleResults" class="admin-secondary sync-button" type="button">✓ Settle results</button>
         </div>
         <div id="syncMessage" class="admin-message"></div>
-        <div class="pipeline-stats four">
+
+        <div class="pipeline-stats five">
           <article><span>Fixtures</span><strong id="fixtureCount">0</strong></article>
-          <article><span>Waiting</span><strong id="waitingCount">0</strong></article>
-          <article><span>Ready for market gate</span><strong id="readyCount">0</strong></article>
           <article><span>Enriched</span><strong id="enrichedCount">0</strong></article>
+          <article><span>Market-ready</span><strong id="readyCount">0</strong></article>
+          <article><span>Drafts</span><strong id="draftCount">0</strong></article>
+          <article><span>Rejected</span><strong id="rejectedCount">0</strong></article>
         </div>
-        <div class="pipeline-note"><b>READY</b> means the statistical evidence is strong enough for the next engine stage. It does not mean a bet has been selected or approved for release.</div>
+        <div class="pipeline-note"><b>DRAFT-FIRST:</b> READY means evidence coverage passed. DRAFT READY means one market survived the contradiction gates. Rejected fixtures remain NO BET. Elite requires stronger evidence, market confirmation and confirmed lineups; otherwise a qualifying pick can only be Strong Core.</div>
         <div id="fixtureList" class="fixture-list"><div class="admin-empty">No imported fixtures yet.</div></div>
       </section>
 
@@ -69,12 +75,10 @@
             <label>Competition<input id="competition" required placeholder="e.g. Spain — La Liga"></label>
             <label>Kickoff (Nigeria time)<input id="kickoff" type="datetime-local" required></label>
           </div>
-
           <div class="admin-grid two">
             <label>Home team<input id="homeTeam" required></label>
             <label>Away team<input id="awayTeam" required></label>
           </div>
-
           <div class="admin-grid two">
             <label>Market
               <select id="marketGroup" required>
@@ -85,25 +89,19 @@
                 <option value="DOUBLE_CHANCE">DOUBLE CHANCE</option>
                 <option value="VALUE">VALUE / UNDERDOG</option>
                 <option value="ROLLOVER">ROLLOVER</option>
-                <option value="OTHER">OTHER</option>
+                <option value="OTHER">OTHER / DNB / TEAM GOALS</option>
               </select>
             </label>
             <label>Selection<input id="selection" required placeholder="e.g. BTTS — YES"></label>
           </div>
-
           <div class="admin-grid three">
-            <label>Odds<input id="odds" type="number" inputmode="decimal" min="1" step="0.01" placeholder="1.72"></label>
-            <label>Grade
-              <select id="grade" required><option>STRONG CORE</option><option>ELITE CORE</option></select>
-            </label>
-            <label>Confidence %<input id="confidence" type="number" min="0" max="100" step="0.1" placeholder="85"></label>
+            <label>Odds<input id="odds" type="number" inputmode="decimal" min="1" step="0.01" placeholder="SportyBet/manual only"></label>
+            <label>Grade<select id="grade" required><option>STRONG CORE</option><option>ELITE CORE</option></select></label>
+            <label>Engine score<input id="confidence" type="number" min="0" max="100" step="0.1" placeholder="85"></label>
           </div>
-
           <label>Reasoning<textarea id="rationale" rows="4" placeholder="Why this selection qualified…"></textarea></label>
-
-          <label class="publish-check"><input id="published" type="checkbox" checked><span><b>Publish immediately</b><small>Turn this off to save as a draft.</small></span></label>
-
-          <button id="saveSignal" class="admin-primary" type="submit">Publish signal</button>
+          <label class="publish-check"><input id="published" type="checkbox"><span><b>Publish to members</b><small>Qualified engine picks arrive here as drafts. Tick only after review.</small></span></label>
+          <button id="saveSignal" class="admin-primary" type="submit">Save draft</button>
           <div id="formMessage" class="admin-message"></div>
         </form>
       </section>
