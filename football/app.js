@@ -87,7 +87,7 @@
     const refresh=$('#refreshBtn');
     if(refresh){refresh.disabled=true;refresh.textContent='Loading…';}
 
-    const [todayRes,resultsRes]=await Promise.all([
+    const [todayRes,resultsRes,adminRes]=await Promise.all([
       sb.from('football_signals')
         .select('id,competition,home_team,away_team,kickoff_at,market_group,selection,odds,grade,confidence,rationale,result_status')
         .eq('published',true)
@@ -99,7 +99,11 @@
         .eq('published',true)
         .neq('result_status','PENDING')
         .order('kickoff_at',{ascending:false})
-        .limit(200)
+        .limit(200),
+      sb.from('football_admins')
+        .select('role')
+        .eq('user_id',window.PAF_SESSION.user.id)
+        .maybeSingle()
     ]);
 
     if(todayRes.error){
@@ -119,6 +123,9 @@
       results=resultsRes.data||[];
     }
     renderResults();
+
+    const adminLink=$('#adminLink');
+    if(adminLink&&!adminRes.error&&adminRes.data)adminLink.hidden=false;
 
     if(refresh){refresh.disabled=false;refresh.textContent='Refresh';}
   }
