@@ -66,6 +66,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const sb=window.supabase.createClient('https://nsmevyhcpqijreuwbqkv.supabase.co','sb_publishable_vmjgX7GlO7iB32tlZRPfBQ__qv6ZixS');
+    const APP_BASE='https://ranytech-dotcom.github.io/positive-arena-markets-web/';
+    const LOGIN_URL=APP_BASE+'login.html';
     const next=new URLSearchParams(location.search).get('next')||'index.html';
     const safeNext=/^[a-zA-Z0-9._-]+\.html$/.test(next)?next:'index.html';
 
@@ -101,8 +103,7 @@
       const email=(document.getElementById('loginEmail').value||document.getElementById('signupEmail').value).trim();
       if(!email){setMsg('loginMsg','Enter your email first, then tap Resend confirmation email.','info');return}
       setMsg('loginMsg','Sending confirmation email…','info');
-      const redirectTo=new URL('login.html',location.href).href;
-      const {error}=await sb.auth.resend({type:'signup',email,options:{emailRedirectTo:redirectTo}});
+      const {error}=await sb.auth.resend({type:'signup',email,options:{emailRedirectTo:LOGIN_URL}});
       if(error){setMsg('loginMsg',error.message||'Could not resend confirmation email.','error');return}
       setMsg('loginMsg','Confirmation email requested. Check Inbox, Spam and Promotions.','ok');
     });
@@ -113,8 +114,7 @@
       const password=document.getElementById('signupPassword').value;
       const confirm=document.getElementById('signupConfirm').value;
       if(password!==confirm){setMsg('signupMsg','Passwords do not match.','error');return}
-      const redirectTo=new URL('login.html',location.href).href;
-      const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:redirectTo}});
+      const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:LOGIN_URL}});
       if(error){setMsg('signupMsg',error.message,'error');return}
       if(data.session){location.replace(safeNext);return}
       const identities=data?.user?.identities||[];
