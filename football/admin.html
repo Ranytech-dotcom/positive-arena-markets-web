@@ -30,26 +30,31 @@
 
     <div id="adminArea" hidden>
       <section class="admin-hero">
-        <div><div class="eyebrow">FOOTBALL CONTROL</div><h2>Fixtures → evidence → draft → publish</h2><p>Import fixtures first. The engine keeps incomplete matches on WAIT and nothing is auto-published without qualification.</p></div>
+        <div><div class="eyebrow">FOOTBALL CONTROL</div><h2>Fixtures → evidence → market gate → draft</h2><p>Import fixtures, enrich real match evidence, then allow only sufficiently covered fixtures to reach the market-selection gate. Nothing is auto-published.</p></div>
         <div class="shield">⚽</div>
       </section>
 
       <section class="admin-card pipeline-card">
         <div class="admin-section-head">
-          <div><div class="eyebrow">ENGINE PIPELINE</div><h3>Fixture intake</h3></div>
+          <div><div class="eyebrow">ENGINE PIPELINE</div><h3>Fixture & evidence intake</h3></div>
           <span class="pipeline-pill">DRAFT-FIRST</span>
         </div>
-        <p class="pipeline-copy">Import the selected Nigeria-time match day. New candidates remain WAITING until required football evidence is available. No prediction is invented and nothing is published automatically.</p>
+        <p class="pipeline-copy">Stage 1 imports the Nigeria-time match day. Stage 2 enriches recent form, xG/xGA, shots, shots on target, box shots, big chances, home/away splits, rest, lineups and absences where the provider has coverage. Missing evidence stays visible as a data gap.</p>
         <div class="sync-row">
           <label>Fixture date (WAT)<input id="syncDate" type="date"></label>
-          <button id="syncFixtures" class="admin-primary sync-button" type="button">Sync fixtures</button>
+          <div class="pipeline-actions">
+            <button id="syncFixtures" class="admin-primary sync-button" type="button">1. Sync fixtures</button>
+            <button id="enrichEvidence" class="admin-secondary sync-button" type="button">2. Enrich evidence</button>
+          </div>
         </div>
         <div id="syncMessage" class="admin-message"></div>
-        <div class="pipeline-stats">
+        <div class="pipeline-stats four">
           <article><span>Fixtures</span><strong id="fixtureCount">0</strong></article>
           <article><span>Waiting</span><strong id="waitingCount">0</strong></article>
-          <article><span>Ready</span><strong id="readyCount">0</strong></article>
+          <article><span>Ready for market gate</span><strong id="readyCount">0</strong></article>
+          <article><span>Enriched</span><strong id="enrichedCount">0</strong></article>
         </div>
+        <div class="pipeline-note"><b>READY</b> means the statistical evidence is strong enough for the next engine stage. It does not mean a bet has been selected or approved for release.</div>
         <div id="fixtureList" class="fixture-list"><div class="admin-empty">No imported fixtures yet.</div></div>
       </section>
 
