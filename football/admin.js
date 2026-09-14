@@ -6,6 +6,8 @@
   const $$=s=>Array.from(document.querySelectorAll(s));
   const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   let rows=[];
+  let fixtures=[];
+  let candidates=[];
   let editingId=null;
   let managerFilter='ALL';
 
@@ -18,7 +20,17 @@
     const get=t=>p.find(x=>x.type===t)?.value;
     return `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}`;
   };
+  const watDate=()=>{
+    const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Lagos',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+    const get=t=>p.find(x=>x.type===t)?.value;
+    return `${get('year')}-${get('month')}-${get('day')}`;
+  };
+  const dateRange=value=>{
+    const start=new Date(`${value}T00:00:00+01:00`);
+    return {start:start.toISOString(),end:new Date(start.getTime()+86400000).toISOString()};
+  };
   const msg=(text,kind='')=>{const el=$('#formMessage');el.textContent=text||'';el.className='admin-message '+kind;};
+  const syncMsg=(text,kind='')=>{const el=$('#syncMessage');if(!el)return;el.textContent=text||'';el.className='admin-message '+kind;};
 
   function filteredRows(){
     return rows.filter(r=>managerFilter==='ALL'||(managerFilter==='PUBLISHED'&&r.published)||(managerFilter==='DRAFT'&&!r.published)||(managerFilter==='PENDING'&&r.result_status==='PENDING')||(managerFilter==='SETTLED'&&r.result_status!=='PENDING'));
@@ -49,14 +61,78 @@
     rows=data||[];render();
   }
 
+  function renderPipeline(){
+    const list=$('#fixtureList');
+    if(!list)return;
+    const map=new Map(candidates.map(c=>[c.fixture_id,c]));
+    const waiting=candidates.filter(c=>String(c.decision).toUpperCase()==='WAIT').length;
+    const ready=candidates.filter(c=>String(c.decision).toUpperCase()==='READY').length;
+    $('#fixtureCount').textContent=fixtures.length;
+    $('#waitingCount').textContent=waiting;
+    $('#readyCount').textContent=ready;
+    if(!fixtures.length){list.innerHTML='<div class="admin-empty">No imported fixtures for this date yet.</div>';return;}
+    list.innerHTML=fixtures.slice(0,50).map(f=>{
+      const c=map.get(f.id);
+      const decision=String(c?.decision||'NOT SCANNED').toUpperCase();
+      const gaps=Array.isArray(c?.data_gaps)?c.data_gaps.length:0;
+      const decisionClass=decision==='READY'?'ready':decision==='WAIT'?'waiting':'';
+      return `<article class="fixture-row" data-fixture-id="${esc(f.id)}">
+        <div class="fixture-main"><div class="sub">${esc(f.competition)}${f.country?` · ${esc(f.country)}`:''}</div><h4>${esc(f.home_team)} vs ${esc(f.away_team)}</h4><div class="sub">${esc(fmt(f.kickoff_at))} WAT · ${esc(f.status||'NS')}</div></div>
+        <div class="fixture-side"><span class="fixture-decision ${decisionClass}">${esc(decision)}</span><span class="gap-count">${gaps} data gap${gaps===1?'':'s'}</span><button type="button" class="small-action" data-use-fixture="${esc(f.id)}">Use fixture</button></div>
+      </article>`;
+    }).join('');
+  }
+
+  async function loadPipeline(){
+    const date=$('#syncDate')?.value||watDate();
+    const {start,end}=dateRange(date);
+    const fixtureRes=await sb.from('football_fixtures')
+      .select('id,provider,provider_fixture_id,competition,country,home_team,away_team,kickoff_at,status,data_quality,last_synced_at')
+      .gte('kickoff_at',start).lt('kickoff_at',end).order('kickoff_at',{ascending:true}).limit(200);
+    if(fixtureRes.error){
+      fixtures=[];candidates=[];renderPipeline();
+      syncMsg(`Could not load fixture pipeline: ${fixtureRes.error.message}`,'error');
+      return;
+    }
+    fixtures=fixtureRes.data||[];
+    if(!fixtures.length){candidates=[];renderPipeline();return;}
+    const ids=fixtures.map(f=>f.id);
+    const candidateRes=await sb.from('football_engine_candidates')
+      .select('id,fixture_id,engine,market_group,selection,grade,confidence,score,decision,data_gaps,contradictions,signal_id,updated_at')
+      .in('fixture_id',ids).order('created_at',{ascending:false});
+    candidates=candidateRes.error?[]:(candidateRes.data||[]);
+    renderPipeline();
+  }
+
   function resetForm(){
     editingId=null;$('#signalForm').reset();$('#published').checked=true;$('#editorTitle').textContent='New signal';$('#saveSignal').textContent='Publish signal';$('#cancelEdit').hidden=true;msg('');
+  }
+
+  function useFixture(f){
+    editingId=null;
+    $('#signalForm').reset();
+    $('#competition').value=f.competition||'';
+    $('#homeTeam').value=f.home_team||'';
+    $('#awayTeam').value=f.away_team||'';
+    $('#kickoff').value=isoToLocal(f.kickoff_at);
+    $('#marketGroup').value='OTHER';
+    $('#selection').value='';
+    $('#odds').value='';
+    $('#grade').value='STRONG CORE';
+    $('#confidence').value='';
+    $('#rationale').value='';
+    $('#published').checked=false;
+    $('#editorTitle').textContent='Review imported fixture';
+    $('#saveSignal').textContent='Save as draft';
+    $('#cancelEdit').hidden=false;
+    msg('Fixture details loaded. Select a market only after your evidence checks pass.','info');
+    document.querySelector('.editor-card')?.scrollIntoView({behavior:'smooth',block:'start'});
   }
 
   function editRow(r){
     editingId=r.id;
     $('#competition').value=r.competition||'';$('#homeTeam').value=r.home_team||'';$('#awayTeam').value=r.away_team||'';$('#kickoff').value=isoToLocal(r.kickoff_at);$('#marketGroup').value=r.market_group;$('#selection').value=r.selection||'';$('#odds').value=r.odds??'';$('#grade').value=r.grade;$('#confidence').value=r.confidence??'';$('#rationale').value=r.rationale||'';$('#published').checked=!!r.published;
-    $('#editorTitle').textContent='Edit signal';$('#saveSignal').textContent='Save changes';$('#cancelEdit').hidden=false;window.scrollTo({top:0,behavior:'smooth'});
+    $('#editorTitle').textContent='Edit signal';$('#saveSignal').textContent='Save changes';$('#cancelEdit').hidden=false;document.querySelector('.editor-card')?.scrollIntoView({behavior:'smooth',block:'start'});
   }
 
   $('#signalForm').addEventListener('submit',async e=>{
@@ -68,7 +144,31 @@
     const {error}=await q;
     btn.disabled=false;
     if(error){msg(error.message||'Could not save signal.','error');return;}
-    msg(editingId?'Signal updated.':'Signal created.','ok');resetForm();await load();
+    const wasEditing=!!editingId;
+    resetForm();msg(wasEditing?'Signal updated.':'Signal created.','ok');await Promise.all([load(),loadPipeline()]);
+  });
+
+  $('#syncFixtures')?.addEventListener('click',async()=>{
+    const btn=$('#syncFixtures');
+    const date=$('#syncDate').value||watDate();
+    btn.disabled=true;btn.textContent='Syncing…';syncMsg('Importing fixtures. Nothing will be auto-published.');
+    const {data,error}=await sb.functions.invoke('football-fixture-intake',{body:{date}});
+    btn.disabled=false;btn.textContent='Sync fixtures';
+    if(error){
+      let detail=error.message||'Fixture sync failed.';
+      try{if(error.context){const body=await error.context.json();detail=body?.error||body?.message||detail;}}catch{}
+      syncMsg(detail,'error');return;
+    }
+    if(!data?.ok){syncMsg(data?.error||'Fixture sync did not complete.','error');return;}
+    syncMsg(`${data.message||'Fixture sync complete'} Seen ${data.fixtures_seen||0} · saved ${data.fixtures_written||0} · waiting candidates ${data.candidates_created||0}.`,'ok');
+    await loadPipeline();
+  });
+
+  $('#syncDate')?.addEventListener('change',()=>{syncMsg('');loadPipeline();});
+  $('#fixtureList')?.addEventListener('click',e=>{
+    const id=e.target.closest('[data-use-fixture]')?.dataset.useFixture;
+    if(!id)return;
+    const f=fixtures.find(x=>x.id===id);if(f)useFixture(f);
   });
 
   $('#cancelEdit').addEventListener('click',resetForm);
@@ -97,6 +197,9 @@
     const {data:admin,error}=await sb.from('football_admins').select('role').eq('user_id',session.user.id).maybeSingle();
     document.documentElement.classList.add('admin-ready');
     if(error||!admin){$('#accessDenied').hidden=false;return;}
-    $('#adminRole').textContent=String(admin.role||'ADMIN').toUpperCase();$('#adminArea').hidden=false;await load();
+    $('#adminRole').textContent=String(admin.role||'ADMIN').toUpperCase();
+    $('#adminArea').hidden=false;
+    $('#syncDate').value=watDate();
+    await Promise.all([load(),loadPipeline()]);
   })();
 })();
