@@ -30,8 +30,27 @@
 
     <div id="adminArea" hidden>
       <section class="admin-hero">
-        <div><div class="eyebrow">SIGNAL CONTROL</div><h2>Publish football signals</h2><p>Create, edit, publish and settle selections without changing website code.</p></div>
+        <div><div class="eyebrow">FOOTBALL CONTROL</div><h2>Fixtures → evidence → draft → publish</h2><p>Import fixtures first. The engine keeps incomplete matches on WAIT and nothing is auto-published without qualification.</p></div>
         <div class="shield">⚽</div>
+      </section>
+
+      <section class="admin-card pipeline-card">
+        <div class="admin-section-head">
+          <div><div class="eyebrow">ENGINE PIPELINE</div><h3>Fixture intake</h3></div>
+          <span class="pipeline-pill">DRAFT-FIRST</span>
+        </div>
+        <p class="pipeline-copy">Import the selected Nigeria-time match day. New candidates remain WAITING until required football evidence is available. No prediction is invented and nothing is published automatically.</p>
+        <div class="sync-row">
+          <label>Fixture date (WAT)<input id="syncDate" type="date"></label>
+          <button id="syncFixtures" class="admin-primary sync-button" type="button">Sync fixtures</button>
+        </div>
+        <div id="syncMessage" class="admin-message"></div>
+        <div class="pipeline-stats">
+          <article><span>Fixtures</span><strong id="fixtureCount">0</strong></article>
+          <article><span>Waiting</span><strong id="waitingCount">0</strong></article>
+          <article><span>Ready</span><strong id="readyCount">0</strong></article>
+        </div>
+        <div id="fixtureList" class="fixture-list"><div class="admin-empty">No imported fixtures yet.</div></div>
       </section>
 
       <section class="admin-card editor-card">
