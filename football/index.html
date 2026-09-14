@@ -12,6 +12,7 @@
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
+  <style>html:not(.auth-ready) body{visibility:hidden}.danger-btn{width:100%;margin-top:10px;border:1px solid rgba(255,107,123,.28);background:rgba(255,107,123,.06);color:#ff8b98;border-radius:15px;padding:13px;font-weight:900}</style>
 </head>
 <body>
   <main class="app-shell">
@@ -23,7 +24,7 @@
           <h1>Football</h1>
         </div>
       </div>
-      <div class="beta-pill">BETA</div>
+      <div class="beta-pill" id="trialBadge">30-DAY TRIAL</div>
     </header>
 
     <section class="hero">
@@ -60,7 +61,7 @@
         <button class="chip" data-filter="DRAW">Draw</button>
       </div>
 
-      <section id="signalFeed" class="signal-feed"></section>
+      <section id="signalFeed" class="signal-feed"><div class="empty-card">Loading football signals…</div></section>
     </section>
 
     <section class="view" data-view="core">
@@ -87,7 +88,7 @@
         <article><span>Void</span><strong id="voidCount">0</strong></article>
         <article><span>Strike rate</span><strong id="strikeRate">—</strong></article>
       </div>
-      <div class="empty-card">No settled Positive Arena Football signals yet.</div>
+      <div id="resultsNote" class="empty-card">No settled Positive Arena Football signals yet.</div>
     </section>
 
     <section class="view" data-view="profile">
@@ -95,11 +96,14 @@
         <div><div class="eyebrow">ACCOUNT</div><h3>Profile</h3></div>
       </div>
       <div class="profile-card">
-        <div class="profile-line"><span>Access</span><strong>Test mode</strong></div>
+        <div class="profile-line"><span>Email</span><strong id="memberEmail">Member</strong></div>
+        <div class="profile-line"><span>Access</span><strong>Football test mode</strong></div>
+        <div class="profile-line"><span>Trial</span><strong id="trialInfo">Checking…</strong></div>
         <div class="profile-line"><span>Timezone</span><strong>Africa/Lagos</strong></div>
         <div class="profile-line"><span>Signal policy</span><strong>Strong / Elite only</strong></div>
         <button class="primary-btn" type="button" data-install-app>Install Positive Arena Football</button>
         <p class="muted" data-install-note>Preparing app installation…</p>
+        <button class="danger-btn" type="button" onclick="PAF_SIGN_OUT()">Sign out</button>
       </div>
     </section>
   </main>
@@ -111,6 +115,8 @@
     <button class="nav-btn" data-nav="profile"><span>◉</span>Profile</button>
   </nav>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
