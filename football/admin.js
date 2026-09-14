@@ -53,18 +53,19 @@
   function render(){
     const list=$('#adminSignals');
     const data=filteredRows();
-    if(!data.length){list.innerHTML='<div class="admin-empty">No signals in this view.</div>';return;}
+    if(!data.length){list.innerHTML='<div class="admin-empty">No Core signals in this view.</div>';return;}
     list.innerHTML=data.map(r=>{
       const ref=r.reference_odds!=null?`<span>Ref ${Number(r.reference_odds).toFixed(2)}</span>`:'';
       const score=r.model_score!=null?`<span>Engine ${Math.round(Number(r.model_score))}/100</span>`:'';
-      const source=r.auto_generated?'<span>AUTO DRAFT</span>':'<span>MANUAL</span>';
+      const source=r.auto_generated?'<span>AUTO</span>':'<span>MANUAL</span>';
       const result=r.result_score?`${r.result_status} ${r.result_score}`:r.result_status;
+      const control=r.published?'<button type="button" data-action="publish">Unpublish</button>':'';
       return `<article class="admin-signal" data-id="${esc(r.id)}">
-        <div class="admin-signal-top"><div><div class="sub">${esc(r.competition)}</div><h4>${esc(r.home_team)} vs ${esc(r.away_team)}</h4><div class="sub">${esc(fmt(r.kickoff_at))} WAT</div></div><span class="status ${r.published?'published':'draft'}">${r.published?'PUBLISHED':'DRAFT'}</span></div>
+        <div class="admin-signal-top"><div><div class="sub">${esc(r.competition)}</div><h4>${esc(r.home_team)} vs ${esc(r.away_team)}</h4><div class="sub">${esc(fmt(r.kickoff_at))} WAT</div></div><span class="status ${r.published?'published':'draft'}">${r.published?'LIVE':'HELD'}</span></div>
         <div class="admin-signal-meta"><span>${esc(r.market_group)}</span><span>${esc(r.selection)}</span>${r.odds!=null?`<span>Odds ${Number(r.odds).toFixed(2)}</span>`:''}${ref}<span>${esc(r.grade)}</span>${score}${source}<span>${esc(result)}</span></div>
         <div class="admin-actions">
+          ${control}
           <button type="button" data-action="edit">Edit</button>
-          <button type="button" data-action="publish">${r.published?'Unpublish':'Publish'}</button>
           <button type="button" class="win" data-result="WON">Won</button>
           <button type="button" class="loss" data-result="LOST">Lost</button>
           <button type="button" class="void" data-result="VOID">Void</button>
@@ -87,12 +88,12 @@
     const map=new Map(candidates.map(c=>[c.fixture_id,c]));
     const enriched=candidates.filter(c=>c?.evidence?.stage==='evidence_enriched').length;
     const ready=candidates.filter(c=>String(c.decision).toUpperCase()==='READY').length;
-    const drafts=candidates.filter(c=>String(c.decision).toUpperCase()==='DRAFT_READY').length;
+    const cores=candidates.filter(c=>['DRAFT_READY','PUBLISHED'].includes(String(c.decision).toUpperCase())).length;
     const rejected=candidates.filter(c=>String(c.decision).toUpperCase()==='REJECTED').length;
     $('#fixtureCount').textContent=fixtures.length;
     $('#enrichedCount').textContent=enriched;
     $('#readyCount').textContent=ready;
-    $('#draftCount').textContent=drafts;
+    $('#draftCount').textContent=cores;
     $('#rejectedCount').textContent=rejected;
     if(!fixtures.length){list.innerHTML='<div class="admin-empty">No imported fixtures for this date yet.</div>';return;}
 
@@ -146,29 +147,53 @@
   }
 
   function resetForm(){
-    editingId=null;activeFixtureId=null;$('#signalForm').reset();$('#published').checked=false;$('#editorTitle').textContent='New signal';$('#saveSignal').textContent='Save draft';$('#cancelEdit').hidden=true;msg('');
+    editingId=null;activeFixtureId=null;$('#signalForm').reset();$('#published').checked=false;$('#editorTitle').textContent='';$('#saveSignal').textContent='Save';$('#cancelEdit').hidden=true;msg('');
   }
 
   function editRow(r){
     editingId=r.id;activeFixtureId=r.fixture_id||null;
     $('#competition').value=r.competition||'';$('#homeTeam').value=r.home_team||'';$('#awayTeam').value=r.away_team||'';$('#kickoff').value=isoToLocal(r.kickoff_at);$('#marketGroup').value=r.market_group||'OTHER';$('#selection').value=r.selection||'';$('#odds').value=r.odds??'';$('#grade').value=r.grade||'STRONG CORE';$('#confidence').value=r.confidence??r.model_score??'';$('#rationale').value=r.rationale||'';$('#published').checked=!!r.published;
-    $('#editorTitle').textContent=r.auto_generated?'Review engine draft':'Edit signal';$('#saveSignal').textContent=r.published?'Save published signal':'Save draft';$('#cancelEdit').hidden=false;document.querySelector('.editor-card')?.scrollIntoView({behavior:'smooth',block:'start'});
+    $('#cancelEdit').hidden=false;
   }
 
   function useFixture(f){
     const existing=rows.find(r=>r.fixture_id===f.id);
-    if(existing){editRow(existing);msg('Existing signal/draft loaded for review.','info');return;}
+    if(existing){editRow(existing);return;}
     editingId=null;activeFixtureId=f.id;$('#signalForm').reset();
-    $('#competition').value=f.competition||'';$('#homeTeam').value=f.home_team||'';$('#awayTeam').value=f.away_team||'';$('#kickoff').value=isoToLocal(f.kickoff_at);$('#marketGroup').value='OTHER';$('#selection').value='';$('#odds').value='';$('#grade').value='STRONG CORE';$('#confidence').value='';$('#rationale').value='';$('#published').checked=false;
-    $('#editorTitle').textContent='Review imported fixture';$('#saveSignal').textContent='Save draft';$('#cancelEdit').hidden=false;msg('Fixture loaded. Do not publish unless the evidence and contradiction gates support the selection.','info');document.querySelector('.editor-card')?.scrollIntoView({behavior:'smooth',block:'start'});
+    $('#competition').value=f.competition||'';$('#homeTeam').value=f.home_team||'';$('#awayTeam').value=f.away_team||'';$('#kickoff').value=isoToLocal(f.kickoff_at);$('#marketGroup').value='OTHER';$('#selection').value='';$('#odds').value='';$('#grade').value='STRONG CORE';$('#confidence').value='';$('#rationale').value='';$('#published').checked=false;$('#cancelEdit').hidden=false;
   }
 
   async function sendPush(signalId){
     try{const {data,error}=await sb.functions.invoke('football-push-send',{body:{signal_id:signalId}});if(error)return {ok:false,error:await edgeError(error,'Push failed')};return data||{ok:true};}catch(e){return {ok:false,error:String(e)};}
   }
 
+  async function autoReleaseQualified(){
+    const now=Date.now();
+    const eligible=rows.filter(r=>{
+      if(!r.auto_generated||r.published||new Date(r.kickoff_at).getTime()<=now)return false;
+      const score=Number(r.model_score??r.confidence??0);
+      const coverage=Number(r.evidence_snapshot?.coverage_score??0);
+      const contradictions=Array.isArray(r.contradictions)?r.contradictions:[];
+      const grade=String(r.grade||'').toUpperCase();
+      if(contradictions.length||r.market_confirmed!==true)return false;
+      if(grade==='ELITE CORE')return score>=92&&coverage>=85;
+      if(grade==='STRONG CORE')return score>=88&&coverage>=80;
+      return false;
+    });
+    let released=0,pushed=0;
+    for(const r of eligible){
+      const nowIso=new Date().toISOString();
+      const {error}=await sb.from('football_signals').update({published:true,published_at:nowIso,updated_at:nowIso}).eq('id',r.id);
+      if(error)continue;
+      await sb.from('football_engine_candidates').update({decision:'PUBLISHED',updated_at:nowIso}).eq('signal_id',r.id);
+      const p=await sendPush(r.id);pushed+=Number(p?.delivered||0);released++;
+    }
+    if(released)await Promise.all([load(),loadPipeline()]);
+    return {released,pushed};
+  }
+
   async function runSync(date,{silent=false}={}){
-    if(!silent)syncMsg('Importing worldwide fixtures. Nothing will be auto-published.');
+    if(!silent)syncMsg('Finding today’s worldwide fixtures…');
     const {data,error}=await sb.functions.invoke('football-fixture-intake',{body:{date,max_pages:6}});
     if(error)throw new Error(await edgeError(error,'Fixture sync failed.'));
     if(!data?.ok)throw new Error(data?.error||'Fixture sync did not complete.');
@@ -177,7 +202,7 @@
   }
 
   async function runEvidence(body,{silent=false}={}){
-    if(!silent)syncMsg('Building evidence from recent matches. Missing provider data stays visible as a gap.');
+    if(!silent)syncMsg('Checking form, xG, shots and supporting evidence…');
     const {data,error}=await sb.functions.invoke('football-evidence-enrich',{body});
     if(error)throw new Error(await edgeError(error,'Evidence enrichment failed.'));
     if(!data?.ok)throw new Error(data?.error||'Evidence enrichment did not complete.');
@@ -185,16 +210,17 @@
   }
 
   async function runMarketGate(body,{silent=false}={}){
-    if(!silent)syncMsg('Comparing all supported markets and applying contradiction gates. Qualified picks remain drafts.');
+    if(!silent)syncMsg('Running the Core qualification gates…');
     const {data,error}=await sb.functions.invoke('football-market-select',{body});
     if(error)throw new Error(await edgeError(error,'Market gate failed.'));
     if(!data?.ok)throw new Error(data?.error||'Market gate did not complete.');
     await Promise.all([load(),loadPipeline()]);
-    return data;
+    const release=await autoReleaseQualified();
+    return {...data,auto_released:release.released,push_delivered:release.pushed};
   }
 
   async function runSettlement({silent=false}={}){
-    if(!silent)syncMsg('Checking completed matches and settling supported signals…');
+    if(!silent)syncMsg('Checking completed matches and results…');
     const {data,error}=await sb.functions.invoke('football-result-settler',{body:{limit:100}});
     if(error)throw new Error(await edgeError(error,'Result settlement failed.'));
     if(!data?.ok)throw new Error(data?.error||'Settlement did not complete.');
@@ -213,40 +239,41 @@
     let q=editingId?sb.from('football_signals').update(payload).eq('id',editingId):sb.from('football_signals').insert(payload);
     q=q.select('id,published').single();const {data,error}=await q;btn.disabled=false;
     if(error){msg(error.message||'Could not save signal.','error');return;}
-    let pushText='';if(data?.published){const p=await sendPush(data.id);pushText=p?.delivered?` Push sent to ${p.delivered} device${p.delivered===1?'':'s'}.`:'';}
-    const wasEditing=!!editingId;resetForm();msg((wasEditing?'Signal updated.':'Signal created.')+pushText,'ok');await Promise.all([load(),loadPipeline()]);
+    if(data?.published)await sendPush(data.id);
+    resetForm();await Promise.all([load(),loadPipeline()]);
   });
 
   $('#syncFixtures')?.addEventListener('click',async()=>{
     if(pipelineBusy)return;setBusy(true);const date=$('#syncDate').value||watDate();
-    try{const d=await runSync(date);syncMsg(`${d.message} Seen ${d.fixtures_seen||0} · saved ${d.fixtures_written||0}.`,'ok');}catch(e){syncMsg(e.message||String(e),'error');}finally{setBusy(false);}
+    try{const d=await runSync(date);syncMsg(`Fixtures updated: ${d.fixtures_written||0}.`,'ok');}catch(e){syncMsg(e.message||String(e),'error');}finally{setBusy(false);}
   });
 
   $('#enrichEvidence')?.addEventListener('click',async()=>{
     if(pipelineBusy)return;setBusy(true);const date=$('#syncDate').value||watDate();
-    try{const d=await runEvidence({date,limit:20});syncMsg(`${d.message} Enriched ${d.enriched||0} · ready ${d.ready||0} · failed ${d.failed||0}.`,'ok');await loadPipeline();}catch(e){syncMsg(e.message||String(e),'error');}finally{setBusy(false);}
+    try{const d=await runEvidence({date,limit:20});syncMsg(`Checked ${d.enriched||0} fixtures. Ready ${d.ready||0}.`,'ok');await loadPipeline();}catch(e){syncMsg(e.message||String(e),'error');}finally{setBusy(false);}
   });
 
   $('#selectMarkets')?.addEventListener('click',async()=>{
     if(pipelineBusy)return;setBusy(true);const date=$('#syncDate').value||watDate();
-    try{const d=await runMarketGate({date});syncMsg(`${d.message} Qualified ${d.qualified||0} · drafts ${d.drafts||0} · rejected ${d.rejected||0}.`,'ok');}catch(e){syncMsg(e.message||String(e),'error');}finally{setBusy(false);}
+    try{const d=await runMarketGate({date});syncMsg(`Core gate complete. Qualified ${d.qualified||0} · auto released ${d.auto_released||0}.`,'ok');}catch(e){syncMsg(e.message||String(e),'error');}finally{setBusy(false);}
   });
 
   $('#settleResults')?.addEventListener('click',async()=>{
     if(pipelineBusy)return;setBusy(true);
-    try{const d=await runSettlement();syncMsg(`${d.message} Won ${d.won||0} · lost ${d.lost||0} · void ${d.voided||0} · skipped ${d.skipped||0}.`,'ok');}catch(e){syncMsg(e.message||String(e),'error');}finally{setBusy(false);}
+    try{const d=await runSettlement();syncMsg(`Results updated. Won ${d.won||0} · lost ${d.lost||0} · void ${d.voided||0}.`,'ok');}catch(e){syncMsg(e.message||String(e),'error');}finally{setBusy(false);}
   });
 
   $('#runFullPipeline')?.addEventListener('click',async()=>{
-    if(pipelineBusy)return;setBusy(true);const btn=$('#runFullPipeline'),old=btn.textContent,date=$('#syncDate').value||watDate();btn.textContent='Running full pipeline…';
+    if(pipelineBusy)return;setBusy(true);const btn=$('#runFullPipeline'),old=btn.textContent,date=$('#syncDate').value||watDate();btn.textContent='Scanning…';
     try{
-      syncMsg('Stage 1/3 — syncing worldwide fixtures…');const s=await runSync(date,{silent:true});
+      syncMsg('Finding today’s fixtures…');const s=await runSync(date,{silent:true});
       const upcoming=fixtures.filter(f=>new Date(f.kickoff_at).getTime()>Date.now()).slice(0,40);
-      if(!upcoming.length){syncMsg('Fixture sync completed but there are no upcoming fixtures to analyse.','info');return;}
-      syncMsg(`Stage 2/3 — enriching ${upcoming.length} nearest upcoming fixture${upcoming.length===1?'':'s'}…`);
-      let failures=0;await pool(upcoming,3,async f=>{try{await runEvidence({fixture_id:f.id,limit:1},{silent:true});}catch{failures++;}},(done,total)=>syncMsg(`Stage 2/3 — evidence ${done}/${total}${failures?` · ${failures} failed`:''}…`));
-      await loadPipeline();syncMsg('Stage 3/3 — applying market selection and contradiction gates…');const g=await runMarketGate({date},{silent:true});
-      syncMsg(`Full pipeline complete. Fixtures ${s.fixtures_written||0} · analysed ${upcoming.length-failures} · qualified ${g.qualified||0} · drafts ${g.drafts||0} · rejected ${g.rejected||0}. Nothing was auto-published.`,'ok');
+      if(!upcoming.length){syncMsg('No upcoming fixtures left to scan today.','info');return;}
+      syncMsg(`Checking ${upcoming.length} upcoming matches…`);
+      let failures=0;await pool(upcoming,3,async f=>{try{await runEvidence({fixture_id:f.id,limit:1},{silent:true});}catch{failures++;}},(done,total)=>syncMsg(`Checking evidence ${done}/${total}…`));
+      await loadPipeline();syncMsg('Applying Core qualification gates…');const g=await runMarketGate({date},{silent:true});
+      const released=g.auto_released||0;
+      syncMsg(released?`Scan complete. ${released} Core signal${released===1?'':'s'} released automatically.`:`Scan complete. No match cleared the automatic Core release gate. Weak matches remain NO BET.`,'ok');
     }catch(e){syncMsg(e.message||String(e),'error');}finally{btn.textContent=old;setBusy(false);}
   });
 
@@ -255,7 +282,7 @@
     const enrich=e.target.closest('[data-enrich-fixture]');
     if(enrich){enrich.disabled=true;const old=enrich.textContent;enrich.textContent='…';try{const d=await runEvidence({fixture_id:enrich.dataset.enrichFixture,limit:1});syncMsg(d.message,'ok');await loadPipeline();}catch(err){syncMsg(err.message||String(err),'error');}finally{enrich.disabled=false;enrich.textContent=old;}return;}
     const gate=e.target.closest('[data-gate-fixture]');
-    if(gate){gate.disabled=true;const old=gate.textContent;gate.textContent='…';try{const d=await runMarketGate({fixture_id:gate.dataset.gateFixture});syncMsg(d.message,'ok');}catch(err){syncMsg(err.message||String(err),'error');}finally{gate.disabled=false;gate.textContent=old;}return;}
+    if(gate){gate.disabled=true;const old=gate.textContent;gate.textContent='…';try{const d=await runMarketGate({fixture_id:gate.dataset.gateFixture});syncMsg(d.auto_released?`Core released automatically.`:d.message,'ok');}catch(err){syncMsg(err.message||String(err),'error');}finally{gate.disabled=false;gate.textContent=old;}return;}
     const id=e.target.closest('[data-use-fixture]')?.dataset.useFixture;if(!id)return;const f=fixtures.find(x=>x.id===id);if(f)useFixture(f);
   });
 
@@ -267,8 +294,11 @@
     const card=e.target.closest('[data-id]');if(!card)return;const r=rows.find(x=>x.id===card.dataset.id);if(!r)return;
     if(e.target.dataset.action==='edit'){editRow(r);return;}
     if(e.target.dataset.action==='publish'){
-      const next=!r.published;const {error}=await sb.from('football_signals').update({published:next,published_at:next?new Date().toISOString():null,updated_at:new Date().toISOString()}).eq('id',r.id);
-      if(error){syncMsg(error.message,'error');return;}if(next){const p=await sendPush(r.id);syncMsg(p?.delivered?`Published. Push delivered to ${p.delivered} device${p.delivered===1?'':'s'}.`:'Published. No subscribed device received a push yet.','ok');}await load();return;
+      if(!r.published)return;
+      const {error}=await sb.from('football_signals').update({published:false,published_at:null,updated_at:new Date().toISOString()}).eq('id',r.id);
+      if(error){syncMsg(error.message,'error');return;}
+      await sb.from('football_engine_candidates').update({decision:'DRAFT_READY',updated_at:new Date().toISOString()}).eq('signal_id',r.id);
+      syncMsg('Signal removed from the member feed.','ok');await Promise.all([load(),loadPipeline()]);return;
     }
     if(e.target.dataset.result){const status=e.target.dataset.result;const {error}=await sb.from('football_signals').update({result_status:status,settled_at:status==='PENDING'?null:new Date().toISOString(),result_source:status==='PENDING'?null:'manual',updated_at:new Date().toISOString()}).eq('id',r.id);if(!error)await load();return;}
     if(e.target.dataset.action==='remove'){if(!confirm(`Remove ${r.home_team} vs ${r.away_team}?`))return;const {error}=await sb.from('football_signals').delete().eq('id',r.id);if(!error)await Promise.all([load(),loadPipeline()]);}
