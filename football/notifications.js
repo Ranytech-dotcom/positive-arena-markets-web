@@ -71,17 +71,26 @@
     btn.textContent='Enable alerts';title.textContent='Never miss a Core signal or result';text.textContent=message||'Enable alerts once for new Core releases and confirmed final results.';
   }
 
+  async function ensureSubscription(reg){
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub&&Notification.permission==='granted'){
+      sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:bytes(VAPID_PUBLIC)});
+    }
+    return sub;
+  }
+
   async function syncExisting(){
     if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)){setState('unsupported');return;}
     if(Notification.permission==='denied'){setState('blocked');return;}
     try{
       const reg=await navigator.serviceWorker.ready;
-      const sub=await reg.pushManager.getSubscription();
-      if(sub){
-        try{await save(sub);}catch{}
-        setState('enabled');
-      }else setState('idle');
-    }catch{setState('idle');}
+      const sub=await ensureSubscription(reg);
+      if(sub){await save(sub);setState('enabled');}
+      else setState('idle');
+    }catch(e){
+      console.warn('Football alert sync failed',e);
+      setState(Notification.permission==='denied'?'blocked':'idle');
+    }
   }
 
   async function enable(){
@@ -94,8 +103,8 @@
         setState('idle','Permission was not granted. Tap Enable alerts when you are ready.');return;
       }
       const reg=await navigator.serviceWorker.ready;
-      let sub=await reg.pushManager.getSubscription();
-      if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:bytes(VAPID_PUBLIC)});
+      const sub=await ensureSubscription(reg);
+      if(!sub)throw new Error('Could not create a push subscription on this phone.');
       await save(sub);
       setState('enabled','Done — this phone will receive new Core releases and confirmed results.');
     }catch(e){setState('idle',e?.message||String(e));}
@@ -109,5 +118,5 @@
     await syncExisting();
   }
 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
