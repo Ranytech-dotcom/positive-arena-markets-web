@@ -9,6 +9,7 @@
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="performance-admin.css?v=20260915-0238">
   <link rel="stylesheet" href="ui-polish.css?v=20260914-2325">
 </head>
 <body>
@@ -60,6 +61,21 @@
         </div>
       </section>
 
+      <section class="admin-card performance-card">
+        <div class="admin-section-head">
+          <div><div class="eyebrow">PERFORMANCE INTELLIGENCE</div><h3>Engine learning</h3></div>
+          <div style="display:flex;align-items:center;gap:8px"><span id="perfMode" class="pipeline-pill">LEARNING</span><button id="reloadPerformance" class="small-action" type="button">Refresh</button></div>
+        </div>
+        <div class="performance-grid">
+          <article><span>Settled</span><strong id="perfSettled">0</strong></article>
+          <article><span>Won</span><strong id="perfWon">0</strong></article>
+          <article><span>Lost</span><strong id="perfLost">0</strong></article>
+          <article><span>Early rate</span><strong id="perfRate">—</strong></article>
+        </div>
+        <div id="perfLearningNote" class="performance-note">Collecting settled Core results. No engine rules will change automatically.</div>
+        <div id="perfFlags" class="performance-flags"><div class="perf-calm">Waiting for enough settled results to compare markets safely.</div></div>
+      </section>
+
       <section class="admin-card">
         <div class="admin-section-head">
           <div><div class="eyebrow">CORE FEED</div><h3>Recent signals</h3></div>
@@ -109,6 +125,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="admin.js"></script>
+  <script src="performance-admin.js?v=20260915-0238"></script>
   <script src="ui-polish.js?v=20260914-2325"></script>
 </body>
 </html>
