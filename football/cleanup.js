@@ -42,6 +42,14 @@
     return `Starts in ${h}h${m?` ${m}m`:''}`;
   }
 
+  function removeRedundantMarketChip(card,meta){
+    const selection=String(card.querySelector('.market-badge')?.textContent||'').toUpperCase();
+    if(!selection.includes('OVER 2.5'))return;
+    Array.from(meta.querySelectorAll('span')).forEach(span=>{
+      if(String(span.textContent||'').trim().toUpperCase()==='O2.5')span.remove();
+    });
+  }
+
   function polishCard(card){
     if(!card)return;
     const reason=card.querySelector('.reason');
@@ -53,6 +61,7 @@
 
     const meta=card.querySelector('.signal-meta');
     if(!meta)return;
+    removeRedundantMarketChip(card,meta);
     const timeSpan=Array.from(meta.querySelectorAll('span')).find(s=>/^\s*\d{1,2}:\d{2}\s*(am|pm)\s*WAT\s*$/i.test(s.textContent||''));
     if(!timeSpan)return;
     const label=countdownText(parseWatTime(timeSpan.textContent||''));
