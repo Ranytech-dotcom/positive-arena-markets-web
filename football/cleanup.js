@@ -12,6 +12,7 @@
   function cleanReason(text=''){
     let t=String(text||'')
       .replace(/\s*Engine score\s*\d+(?:\.\d+)?\s*\/\s*100\.?/gi,'')
+      .replace(/\s*Qualification score\s*\d+(?:\.\d+)?\s*\/\s*100\s*\(not win probability\)\.?/gi,'')
       .replace(/\s*No forced selection\.?/gi,'')
       .replace(/\s+([.,;:])/g,'$1')
       .replace(/\.{2,}/g,'.')
@@ -50,6 +51,14 @@
     });
   }
 
+  function clarifyScore(meta){
+    Array.from(meta.querySelectorAll('span')).forEach(span=>{
+      const text=String(span.textContent||'').trim();
+      if(/^Model score\s+/i.test(text))span.textContent=text.replace(/^Model score/i,'Qualification score');
+      else if(/^Engine\s+\d+(?:\.\d+)?\s*\/\s*100$/i.test(text))span.textContent=text.replace(/^Engine/i,'Qualification score');
+    });
+  }
+
   function polishCard(card){
     if(!card)return;
     const reason=card.querySelector('.reason');
@@ -62,6 +71,7 @@
     const meta=card.querySelector('.signal-meta');
     if(!meta)return;
     removeRedundantMarketChip(card,meta);
+    clarifyScore(meta);
     const timeSpan=Array.from(meta.querySelectorAll('span')).find(s=>/^\s*\d{1,2}:\d{2}\s*(am|pm)\s*WAT\s*$/i.test(s.textContent||''));
     if(!timeSpan)return;
     const label=countdownText(parseWatTime(timeSpan.textContent||''));
