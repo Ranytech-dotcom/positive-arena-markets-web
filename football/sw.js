@@ -1,4 +1,4 @@
-const CACHE='pa-football-v10';
+const CACHE='pa-football-v11';
 const APP_URL='./index.html';
 const SHELL=['./','./index.html','./login.html','./trial-expired.html','./styles.css','./app.js','./auth.js','./notifications.js','./ui-polish.css','./ui-polish.js','./member-watchlist-v2.js','./admin.html','./admin.css','./admin.js','./manifest.webmanifest','./icon.svg','./offline.html'];
 
@@ -9,19 +9,20 @@ self.addEventListener('push',event=>{
   let data={};
   try{data=event.data?.json?.()||{};}catch{try{data={body:event.data?.text?.()||''};}catch{}}
   const title=data.title||'⚽ Positive Arena Football';
-  const options={body:data.body||'A new football Core signal is available.',icon:'./icon.svg',badge:'./icon.svg',tag:data.tag||'positive-arena-football',renotify:true,data:{...data,url:APP_URL}};
+  const options={body:data.body||'A new football update is available.',icon:'./icon.svg',badge:'./icon.svg',tag:data.tag||'positive-arena-football',renotify:true,data:{...data,url:data.url||APP_URL}};
   event.waitUntil(self.registration.showNotification(title,options));
 });
 
 self.addEventListener('notificationclick',event=>{
   event.notification.close();
-  const target=new URL(APP_URL,self.registration.scope).href;
+  let target;
+  try{target=new URL(event.notification?.data?.url||APP_URL,self.registration.scope);if(target.origin!==self.location.origin)target=new URL(APP_URL,self.registration.scope);}catch{target=new URL(APP_URL,self.registration.scope);}
   event.waitUntil((async()=>{
     const list=await clients.matchAll({type:'window',includeUncontrolled:true});
     for(const client of list){
-      if(new URL(client.url).origin===new URL(target).origin){if('navigate' in client)await client.navigate(target);return client.focus();}
+      if(new URL(client.url).origin===target.origin){if('navigate' in client)await client.navigate(target.href);return client.focus();}
     }
-    return clients.openWindow(target);
+    return clients.openWindow(target.href);
   })());
 });
 
