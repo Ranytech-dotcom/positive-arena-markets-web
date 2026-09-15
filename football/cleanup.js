@@ -24,8 +24,11 @@
   function parseWatTime(text=''){
     const m=String(text).trim().match(/^(\d{1,2}):(\d{2})\s*(am|pm)\s*WAT$/i);
     if(!m)return null;
-    let h=Number(m[1]);const min=Number(m[2]);const ap=m[3].toLowerCase();
-    if(ap==='pm'&&h!==12)h+=12;if(ap==='am'&&h===12)h=0;
+    let h=Number(m[1]);
+    const min=Number(m[2]);
+    const ap=m[3].toLowerCase();
+    if(ap==='pm'&&h!==12)h+=12;
+    if(ap==='am'&&h===12)h=0;
     return new Date(`${watDateKey()}T${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}:00+01:00`);
   }
 
@@ -42,18 +45,25 @@
   function polishCard(card){
     if(!card)return;
     const reason=card.querySelector('.reason');
-    if(reason){const cleaned=cleanReason(reason.textContent);if(cleaned)reason.textContent=cleaned;else reason.remove();}
+    if(reason){
+      const cleaned=cleanReason(reason.textContent);
+      if(!cleaned){reason.remove();}
+      else if(reason.textContent!==cleaned){reason.textContent=cleaned;}
+    }
 
     const meta=card.querySelector('.signal-meta');
     if(!meta)return;
-    const timeSpan=Array.from(meta.querySelectorAll('span')).find(s=>/\bWAT\b/i.test(s.textContent||''));
+    const timeSpan=Array.from(meta.querySelectorAll('span')).find(s=>/^\s*\d{1,2}:\d{2}\s*(am|pm)\s*WAT\s*$/i.test(s.textContent||''));
     if(!timeSpan)return;
-    const kickoff=parseWatTime(timeSpan.textContent||'');
-    const label=countdownText(kickoff);
+    const label=countdownText(parseWatTime(timeSpan.textContent||''));
     let countdown=meta.querySelector('.kickoff-countdown');
-    if(!label){countdown?.remove();return;}
-    if(!countdown){countdown=document.createElement('span');countdown.className='kickoff-countdown';timeSpan.insertAdjacentElement('afterend',countdown);}
-    countdown.textContent=label;
+    if(!label){if(countdown)countdown.remove();return;}
+    if(!countdown){
+      countdown=document.createElement('span');
+      countdown.className='kickoff-countdown';
+      timeSpan.insertAdjacentElement('afterend',countdown);
+    }
+    if(countdown.textContent!==label)countdown.textContent=label;
   }
 
   function polishAll(){
@@ -62,19 +72,25 @@
 
   function addStyles(){
     if($('#footballCleanupStyles'))return;
-    const style=document.createElement('style');style.id='footballCleanupStyles';style.textContent=`
+    const style=document.createElement('style');
+    style.id='footballCleanupStyles';
+    style.textContent=`
       .kickoff-countdown{color:#63f2a6!important;border-color:rgba(99,242,166,.24)!important;background:rgba(57,229,140,.07)!important;font-weight:900!important}
       .signal-card .reason{line-height:1.55}
       @media(max-width:520px){.kickoff-countdown{font-size:10.5px!important}}
-    `;document.head.appendChild(style);
+    `;
+    document.head.appendChild(style);
   }
 
   function boot(){
-    addStyles();polishAll();
-    const roots=['signalFeed','watchlistFeed'].map(id=>document.getElementById(id)).filter(Boolean);
-    roots.forEach(root=>new MutationObserver(polishAll).observe(root,{childList:true,subtree:true,characterData:true}));
-    setInterval(polishAll,30000);
+    addStyles();
+    polishAll();
+    setTimeout(polishAll,600);
+    setTimeout(polishAll,1800);
+    document.querySelector('#refreshBtn')?.addEventListener('click',()=>setTimeout(polishAll,1200));
+    setInterval(polishAll,15000);
   }
 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
+  else boot();
 })();
