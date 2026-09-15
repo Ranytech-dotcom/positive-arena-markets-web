@@ -29,6 +29,13 @@
     if(v==='DOUBLE_CHANCE')return 'DOUBLE_CHANCE';
     return v||'OTHER';
   }
+  function sourceLabel(value=''){
+    const v=String(value).toLowerCase();
+    if(v==='sportmonks')return 'SportMonks';
+    if(v==='espn')return 'ESPN';
+    if(v==='thesportsdb')return 'TheSportsDB';
+    return value?String(value):'';
+  }
   function updateLastUpdated(){
     const el=$('#lastUpdated');if(!el)return;
     el.textContent=lastUpdatedAt?`Live • Updated ${formatWatTime(lastUpdatedAt)} WAT`:'Live • Auto-updating';
@@ -56,19 +63,26 @@
   }
 
   function renderResults(){
-    const won=results.filter(r=>r.result_status==='WON').length,lost=results.filter(r=>r.result_status==='LOST').length,voided=results.filter(r=>r.result_status==='VOID').length,settled=won+lost;
+    const won=results.filter(r=>r.result_status==='WON').length;
+    const lost=results.filter(r=>r.result_status==='LOST').length;
+    const voided=results.filter(r=>r.result_status==='VOID').length;
+    const settled=won+lost;
     $('#wonCount').textContent=won;$('#lostCount').textContent=lost;$('#voidCount').textContent=voided;$('#strikeRate').textContent=settled?`${Math.round((won/settled)*100)}%`:'—';
     const note=$('#resultsNote'),list=$('#resultList');
     if(!results.length){if(note){note.hidden=false;note.textContent='No started or settled Positive Arena Football signals yet.';}if(list)list.innerHTML='';return;}
     if(note)note.hidden=true;
     if(list)list.innerHTML=results.map(r=>{
       const status=String(r.result_status||'PENDING').toUpperCase();
-      const cls=status==='WON'?'grade-strong':status==='LOST'?'result-lost':status==='PENDING'?'result-pending':'grade-elite';
-      const label=status==='PENDING'?'PENDING':status;
-      return `<article class="signal-card result-card">
-        <div class="signal-top"><div><div class="league">${esc(r.competition)} · ${esc(formatWatDate(r.kickoff_at))}</div><h4>${esc(r.home_team)} vs ${esc(r.away_team)}</h4></div><span class="market-badge ${cls}">${esc(label)}</span></div>
-        <div class="signal-meta"><span>${esc(r.selection)}</span>${r.result_score?`<span>FT ${esc(r.result_score)}</span>`:''}<span>${esc(r.grade||'CORE')}</span></div>
-        ${status==='PENDING'?'<p class="reason pending-note">Match started • awaiting confirmed final result.</p>':''}
+      const cls=status==='WON'?'result-won':status==='LOST'?'result-lost':status==='VOID'?'result-void':'result-pending';
+      const score=r.result_score?`FT ${r.result_score}`:'';
+      const src=sourceLabel(r.result_source);
+      const noteText=status==='PENDING'
+        ? 'Match started • awaiting confirmed final result.'
+        : `${status==='WON'?'Selection won':status==='LOST'?'Selection lost':'Selection void'} • final result confirmed automatically${src?` via ${src}`:''}.`;
+      return `<article class="signal-card result-card ${cls}">
+        <div class="signal-top"><div><div class="league">${esc(r.competition)} · ${esc(formatWatDate(r.kickoff_at))}</div><h4>${esc(r.home_team)} vs ${esc(r.away_team)}</h4></div><span class="market-badge result-status ${cls}">${esc(status)}</span></div>
+        <div class="signal-meta"><span>${esc(r.selection)}</span>${score?`<span class="final-score">${esc(score)}</span>`:''}<span>${esc(r.grade||'CORE')}</span></div>
+        <p class="result-note ${cls}">${esc(noteText)}</p>
       </article>`;
     }).join('');
   }
@@ -84,7 +98,7 @@
       $('#todayLabel').textContent=todayWat();
       const [todayRes,resultsRes,adminRes]=await Promise.all([
         sb.from('football_signals').select('id,competition,home_team,away_team,kickoff_at,market_group,selection,odds,grade,confidence,rationale,result_status').eq('published',true).gte('kickoff_at',start).lt('kickoff_at',end).gt('kickoff_at',nowIso).order('kickoff_at',{ascending:true}),
-        sb.from('football_signals').select('id,competition,home_team,away_team,kickoff_at,selection,grade,result_status,result_score').eq('published',true).lte('kickoff_at',nowIso).order('kickoff_at',{ascending:false}).limit(100),
+        sb.from('football_signals').select('id,competition,home_team,away_team,kickoff_at,selection,grade,result_status,result_score,result_source,settled_at').eq('published',true).lte('kickoff_at',nowIso).order('kickoff_at',{ascending:false}).limit(100),
         sb.from('football_admins').select('role').eq('user_id',window.PAF_SESSION.user.id).maybeSingle()
       ]);
       if(todayRes.error){console.error('Football signals load failed',todayRes.error);signals=[];const feed=$('#signalFeed');if(feed)feed.innerHTML='<div class="empty-card"><b>Could not load football signals.</b><br><br>Check your connection and try Refresh.</div>';}else{signals=todayRes.data||[];renderSignals();}
@@ -97,12 +111,23 @@
     }
   }
 
-  function showView(name){$$('.view').forEach(v=>v.classList.toggle('active',v.dataset.view===name));$$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.nav===name));window.scrollTo({top:0,behavior:'smooth'});}
+  function showView(name,{scroll=true,updateHash=true}={}){
+    const allowed=['home','core','results','profile'];
+    if(!allowed.includes(name))name='home';
+    $$('.view').forEach(v=>v.classList.toggle('active',v.dataset.view===name));
+    $$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.nav===name));
+    if(updateHash){const base=location.pathname+location.search;history.replaceState(null,'',name==='home'?base:`${base}#${name}`);}
+    if(scroll)window.scrollTo({top:0,behavior:'smooth'});
+  }
   $$('.nav-btn').forEach(btn=>btn.addEventListener('click',()=>showView(btn.dataset.nav)));
   $$('#homeFilters .chip').forEach(btn=>btn.addEventListener('click',()=>{activeFilter=btn.dataset.filter;$$('#homeFilters .chip').forEach(b=>b.classList.toggle('active',b===btn));renderSignals();}));
   $('#refreshBtn')?.addEventListener('click',()=>loadData());
   $('#todayLabel').textContent=todayWat();
   updateLastUpdated();
+
+  const initialView=String(location.hash||'').replace('#','').toLowerCase();
+  if(['core','results','profile'].includes(initialView))showView(initialView,{scroll:false,updateHash:false});
+  window.addEventListener('hashchange',()=>{const v=String(location.hash||'').replace('#','').toLowerCase()||'home';showView(v,{scroll:false,updateHash:false});if(v==='results')loadData({silent:true}).catch(()=>{});});
 
   const base64ToBytes=base64=>{
     const padding='='.repeat((4-base64.length%4)%4),raw=atob((base64+padding).replace(/-/g,'+').replace(/_/g,'/'));
@@ -111,7 +136,7 @@
   async function refreshNotificationUI(){
     const btn=$('#notificationBtn'),note=$('#notificationNote');if(!btn)return;
     if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)){btn.disabled=true;btn.textContent='Notifications unavailable';if(note)note.textContent='This browser does not support web push notifications.';return;}
-    try{const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();if(sub){btn.classList.add('enabled');btn.textContent='🔔 Core Notifications Enabled';if(note)note.textContent='You will receive alerts when a new Core signal is published.';}else{btn.classList.remove('enabled');btn.textContent='🔔 Enable Core Notifications';}}catch{}
+    try{const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();if(sub){btn.classList.add('enabled');btn.textContent='🔔 Football Alerts Enabled';if(note)note.textContent='You will receive new Core releases and confirmed final results.';}else{btn.classList.remove('enabled');btn.textContent='🔔 Enable Football Alerts';}}catch{}
   }
   $('#notificationBtn')?.addEventListener('click',async()=>{
     const btn=$('#notificationBtn'),note=$('#notificationNote');btn.disabled=true;
@@ -119,8 +144,8 @@
       if(!('Notification' in window)||!('serviceWorker' in navigator)||!('PushManager' in window))throw new Error('Push notifications are not supported on this browser.');
       const permission=await Notification.requestPermission();if(permission!=='granted')throw new Error('Notification permission was not granted.');
       const reg=await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:base64ToBytes(VAPID_PUBLIC)});
-      await window.PAF_AUTH_READY;const {data,error}=await window.PAF_SUPABASE.functions.invoke('football-push-register',{body:{subscription:sub.toJSON(),notify_core:true}});if(error||!data?.ok)throw new Error(data?.error||error?.message||'Could not register notifications.');
-      if(note)note.textContent='Notifications enabled. New published Core signals can alert this device.';
+      await window.PAF_AUTH_READY;const {data,error}=await window.PAF_SUPABASE.functions.invoke('football-push-register',{body:{subscription:sub.toJSON(),notify_core:true,notify_results:true}});if(error||!data?.ok)throw new Error(data?.error||error?.message||'Could not register notifications.');
+      if(note)note.textContent='Notifications enabled. New Core signals and confirmed results can alert this device.';
     }catch(e){if(note)note.textContent=e.message||String(e);}finally{btn.disabled=false;await refreshNotificationUI();}
   });
 
