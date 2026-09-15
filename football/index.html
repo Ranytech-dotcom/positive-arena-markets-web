@@ -15,8 +15,8 @@
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="ui-polish.css?v=20260915-0045">
-  <style>html:not(.auth-ready) body{visibility:hidden}.danger-btn{width:100%;margin-top:10px;border:1px solid rgba(255,107,123,.28);background:rgba(255,107,123,.06);color:#ff8b98;border-radius:15px;padding:13px;font-weight:900}.admin-link{text-decoration:none;text-align:center}.notification-btn.enabled{background:#11231a;color:#39e58c;border:1px solid rgba(57,229,140,.28)}.feed-updated{margin:-2px 0 14px;color:#70d9a4;font-size:11px;font-weight:850;letter-spacing:.035em}.result-pending{color:#f6d98a!important;border-color:rgba(246,217,138,.28)!important;background:rgba(246,217,138,.08)!important}.pending-note{color:#f6d98a!important}</style>
+  <link rel="stylesheet" href="ui-polish.css?v=20260915-0110">
+  <style>html:not(.auth-ready) body{visibility:hidden}.danger-btn{width:100%;margin-top:10px;border:1px solid rgba(255,107,123,.28);background:rgba(255,107,123,.06);color:#ff8b98;border-radius:15px;padding:13px;font-weight:900}.admin-link{text-decoration:none;text-align:center}.notification-btn.enabled{background:#11231a;color:#39e58c;border:1px solid rgba(57,229,140,.28)}.feed-updated{margin:-2px 0 14px;color:#70d9a4;font-size:11px;font-weight:850;letter-spacing:.035em}.result-pending{color:#f6d98a!important;border-color:rgba(246,217,138,.28)!important;background:rgba(246,217,138,.08)!important}.pending-note{color:#f6d98a!important}.settlement-note{margin:-2px 0 18px;color:#9bac9f;font-size:11.5px;font-weight:800;line-height:1.5}</style>
 </head>
 <body>
   <main class="app-shell">
@@ -73,6 +73,7 @@
 
     <section class="view" data-view="results">
       <div class="section-head solo"><div><div class="eyebrow">PERFORMANCE</div><h3>Results & pending</h3></div></div>
+      <div class="settlement-note">Automatic settlement is active. Final scores are checked every 5 minutes and confirmed results update here automatically.</div>
       <div class="result-summary">
         <article><span>Won</span><strong id="wonCount">0</strong></article>
         <article><span>Lost</span><strong id="lostCount">0</strong></article>
@@ -92,8 +93,8 @@
         <div class="profile-line"><span>Timezone</span><strong>Africa/Lagos</strong></div>
         <div class="profile-line"><span>Signal policy</span><strong>Strong / Elite only</strong></div>
         <a id="adminLink" class="primary-btn admin-link" href="admin.html" hidden>Open Football Admin</a>
-        <button id="notificationBtn" class="primary-btn notification-btn" type="button">🔔 Enable Core Notifications</button>
-        <p id="notificationNote" class="muted">Get an alert when a new football Core signal is published.</p>
+        <button id="notificationBtn" class="primary-btn notification-btn" type="button">🔔 Enable Football Alerts</button>
+        <p id="notificationNote" class="muted">Get alerts for new Core signals and confirmed final results.</p>
         <button class="primary-btn" type="button" data-install-app>Install Positive Arena Football</button>
         <p class="muted" data-install-note>Preparing app installation…</p>
         <p class="muted">Predictions are analytical signals, not guaranteed outcomes.</p>
@@ -111,8 +112,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="auth.js"></script>
-  <script src="app.js?v=20260915-0045"></script>
-  <script src="notifications.js?v=20260915-0028"></script>
+  <script src="app.js?v=20260915-0110"></script>
+  <script src="notifications.js?v=20260915-0110"></script>
   <script src="ui-polish.js?v=20260915-0028"></script>
   <script src="member-watchlist-v2.js?v=20260915-0028"></script>
 </body>
