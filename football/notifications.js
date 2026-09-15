@@ -18,9 +18,9 @@
     card.innerHTML=`
       <div class="core-alert-icon">🔔</div>
       <div class="core-alert-copy">
-        <div class="eyebrow">INSTANT CORE ALERTS</div>
-        <h3 id="coreAlertTitle">Never miss a released signal</h3>
-        <p id="coreAlertText">Enable alerts once and Positive Arena can notify this phone when a new Strong or Elite Core signal is released.</p>
+        <div class="eyebrow">INSTANT FOOTBALL ALERTS</div>
+        <h3 id="coreAlertTitle">Never miss a Core signal or result</h3>
+        <p id="coreAlertText">Enable alerts once and Positive Arena can notify this phone when a Strong or Elite Core signal is released and when its final result is confirmed.</p>
       </div>
       <button id="homeNotificationBtn" class="core-alert-btn" type="button">Enable alerts</button>`;
     stats.insertAdjacentElement('afterend',card);
@@ -39,8 +39,8 @@
 
   async function save(sub){
     await window.PAF_AUTH_READY;
-    const {data,error}=await window.PAF_SUPABASE.functions.invoke('football-push-register',{body:{subscription:sub.toJSON(),notify_core:true}});
-    if(error||!data?.ok)throw new Error(data?.error||error?.message||'Could not register this phone for Core alerts.');
+    const {data,error}=await window.PAF_SUPABASE.functions.invoke('football-push-register',{body:{subscription:sub.toJSON(),notify_core:true,notify_results:true}});
+    if(error||!data?.ok)throw new Error(data?.error||error?.message||'Could not register this phone for football alerts.');
     return data;
   }
 
@@ -52,10 +52,10 @@
     if(state==='enabled'){
       card.classList.add('enabled');
       btn.textContent='✓ Alerts enabled';
-      title.textContent='Core alerts are on';
-      text.textContent=message||'This phone is ready to receive new Strong and Elite Core releases.';
-      const pbtn=$('#notificationBtn');if(pbtn){pbtn.classList.add('enabled');pbtn.textContent='🔔 Core Notifications Enabled';}
-      const note=$('#notificationNote');if(note)note.textContent='This device is subscribed to new published Core signals.';
+      title.textContent='Core & result alerts are on';
+      text.textContent=message||'This phone is ready for new Strong/Elite Core releases and confirmed final results.';
+      const pbtn=$('#notificationBtn');if(pbtn){pbtn.classList.add('enabled');pbtn.textContent='🔔 Football Alerts Enabled';}
+      const note=$('#notificationNote');if(note)note.textContent='This device is subscribed to Core releases and confirmed result alerts.';
       return;
     }
     if(state==='blocked'){
@@ -68,7 +68,7 @@
     if(state==='unsupported'){
       card.classList.add('blocked');btn.disabled=true;btn.textContent='Not supported';title.textContent='Notifications unavailable';text.textContent=message||'This browser cannot receive web push alerts.';return;
     }
-    btn.textContent='Enable alerts';title.textContent='Never miss a released signal';text.textContent=message||'Enable alerts once and Positive Arena can notify this phone when a new Strong or Elite Core signal is released.';
+    btn.textContent='Enable alerts';title.textContent='Never miss a Core signal or result';text.textContent=message||'Enable alerts once for new Core releases and confirmed final results.';
   }
 
   async function syncExisting(){
@@ -97,7 +97,7 @@
       let sub=await reg.pushManager.getSubscription();
       if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:bytes(VAPID_PUBLIC)});
       await save(sub);
-      setState('enabled','Done — this phone will be alerted when a new Core signal is released.');
+      setState('enabled','Done — this phone will receive new Core releases and confirmed results.');
     }catch(e){setState('idle',e?.message||String(e));}
     finally{const b=$('#homeNotificationBtn');if(b)b.disabled=false;}
   }
